@@ -1,5 +1,4 @@
 Test
 ====
 
-.. automodule:: numpyroCode.gaussian
-    :members:
+.. autofunction:: numpyroCode.likelihoods.gaussian
