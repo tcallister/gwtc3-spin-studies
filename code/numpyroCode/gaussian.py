@@ -9,10 +9,14 @@ def gaussian(sampleDict,injectionDict,mMin):
     """
     Implementation of a Gaussian effective spin distribution.
 
-    INPUTs
-    sampleDict: Precomputed dictionary containing posterior samples for each event in our catalog
-    injectionDict: Precomputed dictionary containing successfully recovered injections
-    mMin: Minimum black hole mass
+    Parameters
+    ----------
+    sampleDict : dict
+        Precomputed dictionary containing posterior samples for each event in our catalog
+    injectionDict : dict
+        Precomputed dictionary containing successfully recovered injections
+    mMin : float
+        Minimum black hole mass
     """
     
     # Sample our hyperparameters
