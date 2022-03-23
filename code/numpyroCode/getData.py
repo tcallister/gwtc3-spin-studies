@@ -9,6 +9,36 @@ def getInjections(mMin=5.0,
     sig_m=4.7,
     f_peak = 0.03):
 
+    """
+    Function to load and preprocess found injections for use in numpyro likelihood functions.
+    Arguments specify that primary mass and redshift distribution to which injections will be reweighted.
+    Default arguments correspond to the 1D median results from the LVK O3b population analysis.
+
+    Parameters
+    ----------
+    mMin : float
+        Minimum black hole mass (Optional; default 5.0)
+    mMax : float
+        Maximum black hole mass (Optional; default 88.2)
+    delta_m : float
+        Smoothing length over which mass spectrum turns on at low masses (Optional; default 4.9)
+    kappa : float
+        Power-law index governing evolution of the BBH merger rate with `1+z` (Optional; default 2.7)
+    alpha : float
+        Power-law index governing primary mass distribution (Optional; default -3.5)
+    mu_m : float
+        Location of Gaussian "peak" in the primary mass distribution (Optional; default 33.6)
+    sig_m : float
+        Width of Gaussian "peak" in the primary mass distribution (Optional; 4.7)
+    f_peak : float
+        Fraction of events comprising the Gaussian "peak" (Optional; default 0.03)
+
+    Returns
+    -------
+    injectionDict : dict
+        Dictionary containing found injections, with factors needed to reweight to desired mass/redshift distribution.
+    """
+
     injectionFile = "/Users/tcallister/Documents/Repositories/o3b-pop-studies/code/injectionDict_10-20_directMixture_FAR_1_in_1.pickle"
     injectionDict = np.load(injectionFile,allow_pickle=True)
 
@@ -45,6 +75,36 @@ def getSamples(mMin=5.,
     mu_m=33.6,
     sig_m=4.7,
     f_peak = 0.03):
+
+    """
+    Function to load and preprocess BBH posterior samples for use in numpyro likelihood functions.
+    Arguments specify that primary mass and redshift distribution to which injections will be reweighted.
+    Default arguments correspond to the 1D median results from the LVK O3b population analysis.
+
+    Parameters
+    ----------
+    mMin : float
+        Minimum black hole mass (Optional; default 5.0)
+    mMax : float
+        Maximum black hole mass (Optional; default 88.2)
+    delta_m : float
+        Smoothing length over which mass spectrum turns on at low masses (Optional; default 4.9)
+    kappa : float
+        Power-law index governing evolution of the BBH merger rate with `1+z` (Optional; default 2.7)
+    alpha : float
+        Power-law index governing primary mass distribution (Optional; default -3.5)
+    mu_m : float
+        Location of Gaussian "peak" in the primary mass distribution (Optional; default 33.6)
+    sig_m : float
+        Width of Gaussian "peak" in the primary mass distribution (Optional; 4.7)
+    f_peak : float
+        Fraction of events comprising the Gaussian "peak" (Optional; default 0.03)
+
+    Returns
+    -------
+    sampleDict : dict
+        Dictionary containing posterior samples, with factors needed to reweight to desired mass/redshift distribution.
+    """
 
     # Dicts with samples:
     sampleDict = np.load("/Users/tcallister/Documents/LIGO-Data/sampleDict_FAR_1_in_1_yr.pickle",allow_pickle=True)
