@@ -185,11 +185,12 @@ def doubleGaussian(sampleDict,injectionDict,mMin):
     
     # As a fit diagnostic, compute effective number of injections
     nEff_inj = jnp.sum(xi_weights)**2/jnp.sum(xi_weights**2)
-    numpyro.deterministic("nEff_inj_per_event",nEff_inj/69.)
+    nObs = 1.0*len(sampleDict)
+    numpyro.deterministic("nEff_inj_per_event",nEff_inj/nObs)
 
     # Compute net detection efficiency and add to log-likelihood
     xi = jnp.sum(xi_weights)
-    numpyro.factor("xi",-69*jnp.log(xi))
+    numpyro.factor("xi",-nObs*jnp.log(xi))
     
     # This function defines the per-event log-likelihood
     # m1_sample: Primary mass posterior samples
@@ -298,11 +299,12 @@ def gaussianSpike(sampleDict,injectionDict,mMin,sig_eps):
     
     # As a fit diagnostic, compute effective number of injections
     nEff_inj = jnp.sum(xi_weights)**2/jnp.sum(xi_weights**2)
-    numpyro.deterministic("nEff_inj_per_event",nEff_inj/66.)
+    nObs = 1.0*len(sampleDict)
+    numpyro.deterministic("nEff_inj_per_event",nEff_inj/nObs)
 
     # Compute net detection efficiency and add to log-likelihood
     xi = jnp.sum(xi_weights)
-    numpyro.factor("xi",-66*jnp.log(xi))
+    numpyro.factor("xi",-nObs*jnp.log(xi))
     
     # This function defines the per-event log-likelihood
     # m1_sample: Primary mass posterior samples
@@ -399,11 +401,12 @@ def gaussianSpike_MonteCarloAvg(sampleDict,injectionDict,mMin,sig_eps):
     
     # As a fit diagnostic, compute effective number of injections
     nEff_inj = jnp.sum(xi_weights)**2/jnp.sum(xi_weights**2)
-    numpyro.deterministic("nEff_inj_per_event",nEff_inj/66.)
+    nObs = 1.0*len(sampleDict)
+    numpyro.deterministic("nEff_inj_per_event",nEff_inj/nObs)
 
     # Compute net detection efficiency and add to log-likelihood
     xi = jnp.sum(xi_weights)
-    numpyro.factor("xi",-66*jnp.log(xi))
+    numpyro.factor("xi",-nObs*jnp.log(xi))
     
     # This function defines the per-event log-likelihood
     # m1_sample: Primary mass posterior samples
