@@ -1,5 +1,5 @@
 Test
 ====
 
-.. automodule:: numpyro.gaussian
+.. automodule:: numpyroCode.gaussian
     :members:
