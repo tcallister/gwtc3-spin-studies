@@ -39,7 +39,7 @@ def getInjections(mMin=5.0,
         Dictionary containing found injections, with factors needed to reweight to desired mass/redshift distribution.
     """
 
-    injectionFile = "/Users/tcallister/Documents/Repositories/o3b-pop-studies/code/injectionDict_10-20_directMixture_FAR_1_in_1.pickle"
+    injectionFile = "../input/injectionDict_FAR_1_in_1.pickle"
     injectionDict = np.load(injectionFile,allow_pickle=True)
 
     m1_det = np.array(injectionDict['m1'])
@@ -107,7 +107,7 @@ def getSamples(mMin=5.,
     """
 
     # Dicts with samples:
-    sampleDict = np.load("/Users/tcallister/Documents/LIGO-Data/sampleDict_FAR_1_in_1_yr.pickle",allow_pickle=True)
+    sampleDict = np.load("../input/sampleDict_FAR_1_in_1_yr.pickle",allow_pickle=True)
     sampleDict.pop('S190814bv')
 
     for event in sampleDict:
