@@ -29,9 +29,27 @@ The output will be a .cdf file storing the resulting posterior samples and diagn
 
     output/effective_spin_gaussian.cdf
 
-This file can be read in and explored using the `arviz` module in python.
-A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found HERE.
+.. note::
 
+    A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found here_.
+
+.. _here: https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_effective_spin_gaussian.ipynb
+
+GaussianSpike |gaussian-spike-image|
+------------------------------------
+
+.. |gaussian-spike-image| image:: images/model-cartoons-GaussianSpike.pdf
+    :width: 100
+
+...
+
+DoubleGaussian |double-gaussian-image|
+------------------------------------
+
+.. |double-gaussian-image| image:: images/model-cartoons-twoGaussian.pdf
+    :width: 100
+
+...
 
 .. autofunction:: numpyroCode.likelihoods.gaussian
 
