@@ -90,7 +90,7 @@ $ python run_gaussian.py
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found <a class="reference external" href="https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_effective_spin_gaussian.ipynb">here</a>.</p>
+<p>A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found <a class="reference external" href="https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_effective_spin_gaussian.ipynb">here</a></p>
 </div>
 </section>
 <section id="gaussianspike-gaussian-spike-image">
@@ -99,7 +99,22 @@ $ python run_gaussian.py
 </section>
 <section id="doublegaussian-double-gaussian-image">
 <h2>DoubleGaussian <a class="reference internal" href="_images/model-cartoons-twoGaussian.pdf"><img alt="double-gaussian-image" src="_images/model-cartoons-twoGaussian.pdf" style="width: 100px;" /></a><a class="headerlink" href="#doublegaussian-double-gaussian-image" title="Permalink to this headline"></a></h2>
-<p>…</p>
+<div class="math notranslate nohighlight">
+\[p(\chi_\mathrm{eff}) = \zeta_\mathrm{high}N(\chi_\mathrm{eff}|\mu_\mathrm{eff,high},\sigma_\mathrm{eff,high}) + (1-\zeta_\mathrm{high})N(\chi_\mathrm{eff}|\mu_\mathrm{eff,low},\sigma_\mathrm{eff,low}) \qquad (-1\leq\chi_\mathrm{eff}\leq 1)\]</div>
+<p>This model can be rerun as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studes
+$ <span class="nb">cd</span> code/numpyroCode/
+$ python run_double_gaussian.py
+</pre></div>
+</div>
+<p>The output will be a .cdf file storing the resulting posterior samples and diagnostic information:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>output/effective_spin_doubleGaussians.cdf
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found <a class="reference external" href="https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_effective_spin_doubleGaussian.ipynb">here</a>.</p>
+</div>
 <dl class="py function">
 <dt class="sig sig-object py" id="numpyroCode.likelihoods.gaussian">
 <span class="sig-prename descclassname"><span class="pre">numpyroCode.likelihoods.</span></span><span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampleDict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">injectionDict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mMin</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/numpyroCode/likelihoods.html#gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#numpyroCode.likelihoods.gaussian" title="Permalink to this definition"></a></dt>

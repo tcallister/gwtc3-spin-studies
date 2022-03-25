@@ -31,9 +31,7 @@ The output will be a .cdf file storing the resulting posterior samples and diagn
 
 .. note::
 
-    A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found here_.
-
-.. _here: https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_effective_spin_gaussian.ipynb
+    A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found `here <https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_effective_spin_gaussian.ipynb>`__
 
 GaussianSpike |gaussian-spike-image|
 ------------------------------------
@@ -44,12 +42,34 @@ GaussianSpike |gaussian-spike-image|
 ...
 
 DoubleGaussian |double-gaussian-image|
-------------------------------------
+--------------------------------------
 
 .. |double-gaussian-image| image:: images/model-cartoons-twoGaussian.pdf
     :width: 100
 
-...
+.. math::
+
+    p(\chi_\mathrm{eff}) = \zeta_\mathrm{high}N(\chi_\mathrm{eff}|\mu_\mathrm{eff,high},\sigma_\mathrm{eff,high}) + (1-\zeta_\mathrm{high})N(\chi_\mathrm{eff}|\mu_\mathrm{eff,low},\sigma_\mathrm{eff,low}) \qquad (-1\leq\chi_\mathrm{eff}\leq 1)
+
+This model can be rerun as follows:
+
+.. code-block:: bash
+
+    $ conda activate gwtc3-spin-studes
+    $ cd code/numpyroCode/
+    $ python run_double_gaussian.py
+
+The output will be a .cdf file storing the resulting posterior samples and diagnostic information:
+
+.. code-block:: bash
+
+    output/effective_spin_doubleGaussians.cdf
+
+.. note::
+
+    A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found here_.
+
+.. _here: https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_effective_spin_doubleGaussian.ipynb
 
 .. autofunction:: numpyroCode.likelihoods.gaussian
 
