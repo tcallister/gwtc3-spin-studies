@@ -261,15 +261,15 @@ def gaussianSpike(sampleDict,injectionDict,mMin,sig_eps):
     logsig_chi = numpyro.sample("logsig_chi",dist.Uniform(-1.5,0))
     sig = 10.**logsig_chi
 
-    # Also sample the mixture fraction governing the number of events in the bulk Gaussian.
+    # Also sample the mixture fraction governing the number of events in our zero-spin spike.
     # In order to faciliate more efficient sampling, we explicitly sample logit(zeta) rather than zeta directly.
     # This is then converted to zeta, and an appropriate term added to our log-likelihood to ensure
     # a uniform prior on zeta
-    logit_zeta_bulk = numpyro.sample("logit_zeta_bulk",dist.Normal(0,2))
-    zeta_bulk = jnp.exp(logit_zeta_bulk)/(1.+jnp.exp(logit_zeta_bulk)) 
-    numpyro.deterministic("zeta_bulk",zeta_bulk)
-    zeta_bulk_logprior = -0.5*logit_zeta_bulk**2/2**2 + jnp.log(1./zeta_bulk + 1./(1-zeta_bulk))
-    numpyro.factor("uniform_zeta_bulk_prior",-zeta_bulk_logprior)
+    logit_zeta_spike = numpyro.sample("logit_zeta_spike",dist.Normal(0,2))
+    zeta_spike = jnp.exp(logit_zeta_spike)/(1.+jnp.exp(logit_zeta_spike)) 
+    numpyro.deterministic("zeta_spike",zeta_spike)
+    zeta_spike_logprior = -0.5*logit_zeta_spike**2/2**2 + jnp.log(1./zeta_spike + 1./(1-zeta_spike))
+    numpyro.factor("uniform_zeta_spike_prior",-zeta_spike_logprior)
 
     # Read out found injections
     # Note that `pop_reweight` is the inverse of the draw weights for each event
@@ -283,7 +283,6 @@ def gaussianSpike(sampleDict,injectionDict,mMin,sig_eps):
     sig_kde = 0.5*jnp.std(Xeff_det)*Xeff_det.size**(-1./5.)
     bulk_denom = jnp.sqrt(2.*jnp.pi*(sig_kde**2+sig**2))*(erf((1.-mu)/jnp.sqrt(2.*sig**2)) + erf((1.+mu)/jnp.sqrt(2.*sig**2)))
     spike_denom = jnp.sqrt(2.*jnp.pi*(sig_kde**2+sig_eps**2))*(erf(1./jnp.sqrt(2.*sig_eps**2)) + erf(1./jnp.sqrt(2.*sig_eps**2)))
-    #spike_denom = (2.*jnp.sqrt(2.*jnp.pi*(sig_kde**2+sig_eps**2)))*erf(1./jnp.sqrt(2.*sig_eps**2))
     bulk_kde_integrals = (erf((sig_kde**2*(1.+mu)+sig**2*(1.+Xeff_det))/jnp.sqrt(2.*sig_kde**2*sig**2*(sig_kde**2+sig**2)))\
                         - erf((sig_kde**2*(mu-1.)+sig**2*(Xeff_det-1.))/jnp.sqrt(2.*sig_kde**2*sig**2*(sig_kde**2+sig**2))))\
                     *jnp.exp(-(Xeff_det-mu)**2/(2.*(sig_kde**2+sig**2)))/bulk_denom
@@ -292,7 +291,7 @@ def gaussianSpike(sampleDict,injectionDict,mMin,sig_eps):
                     *jnp.exp(-Xeff_det**2/(2.*(sig_kde**2+sig_eps**2)))/spike_denom
     
     # Form ratio of proposed population weights over draw weights for each found injection
-    p_chi_det = zeta_bulk*bulk_kde_integrals + (1.-zeta_bulk)*spike_kde_integrals
+    p_chi_det = (1.-zeta_spike)*bulk_kde_integrals + zeta_spike*spike_kde_integrals
     p_m2_det = (1.+bq)*m2_det**bq/(m1_det**(1.+bq) - mMin**(1.+bq))
     p_m2_det = jnp.where(m2_det<mMin,0.,p_m2_det)
     xi_weights = p_chi_det*p_m2_det*pop_reweight
@@ -325,7 +324,7 @@ def gaussianSpike(sampleDict,injectionDict,mMin,sig_eps):
                         *jnp.exp(-Xeff_sample**2/(2.*(sig_kde**2+sig_eps**2)))/spike_denom
     
         # Form total population prior
-        p_chi = zeta_bulk*bulk_kde_integrals + (1.-zeta_bulk)*spike_kde_integrals
+        p_chi = (1.-zeta_spike)*bulk_kde_integrals + zeta_spike*spike_kde_integrals
         p_m2 = (1.+bq)*m2_sample**bq/(m1_sample**(1.+bq) - mMin**(1.+bq))
         p_m2 = jnp.where(m2_sample<mMin,0.,p_m2)
         mc_weights = p_chi*p_m2*weights
@@ -376,15 +375,15 @@ def gaussianSpike_MonteCarloAvg(sampleDict,injectionDict,mMin,sig_eps):
     logsig_chi = numpyro.sample("logsig_chi",dist.Uniform(-1.5,0.))
     sig = 10.**logsig_chi
 
-    # Also sample the mixture fraction governing the number of events in the bulk Gaussian.
+    # Also sample the mixture fraction governing the number of events in the zero-spin spike.
     # In order to faciliate more efficient sampling, we explicitly sample logit(zeta) rather than zeta directly.
     # This is then converted to zeta, and an appropriate term added to our log-likelihood to ensure
     # a uniform prior on zeta
-    logit_zeta_bulk = numpyro.sample("logit_zeta_bulk",dist.Normal(0,2))
-    zeta_bulk = jnp.exp(logit_zeta_bulk)/(1.+jnp.exp(logit_zeta_bulk)) 
-    numpyro.deterministic("zeta_bulk",zeta_bulk)
-    zeta_bulk_logprior = -0.5*logit_zeta_bulk**2/2**2 + jnp.log(1./zeta_bulk + 1./(1-zeta_bulk))
-    numpyro.factor("uniform_zeta_bulk_prior",-zeta_bulk_logprior)
+    logit_zeta_spike = numpyro.sample("logit_zeta_spike",dist.Normal(0,2))
+    zeta_spike = jnp.exp(logit_zeta_spike)/(1.+jnp.exp(logit_zeta_spike)) 
+    numpyro.deterministic("zeta_spike",zeta_spike)
+    zeta_spike_logprior = -0.5*logit_zeta_spike**2/2**2 + jnp.log(1./zeta_spike + 1./(1-zeta_spike))
+    numpyro.factor("uniform_zeta_spike_prior",-zeta_spike_logprior)
     
     # Read out found injections
     # Note that `pop_reweight` is the inverse of the draw weights for each event
@@ -394,7 +393,7 @@ def gaussianSpike_MonteCarloAvg(sampleDict,injectionDict,mMin,sig_eps):
     pop_reweight = injectionDict['pop_reweight']
 
     # Form ratio of proposed population weights over draw weights for each found injection
-    p_chi_det = zeta_bulk*truncatedNormal(Xeff_det,mu,sig,-1,1) + (1.-zeta_bulk)*truncatedNormal(Xeff_det,0.,sig_eps,-1,1)
+    p_chi_det = (1.-zeta_spike)*truncatedNormal(Xeff_det,mu,sig,-1,1) + zeta_spike*truncatedNormal(Xeff_det,0.,sig_eps,-1,1)
     p_m2_det = (1.+bq)*m2_det**bq/(m1_det**(1.+bq) - mMin**(1.+bq))
     p_m2_det = jnp.where(m2_det<mMin,0.,p_m2_det)
     xi_weights = p_chi_det*p_m2_det*pop_reweight
@@ -416,7 +415,7 @@ def gaussianSpike_MonteCarloAvg(sampleDict,injectionDict,mMin,sig_eps):
     def logp(m1_sample,m2_sample,Xeff_sample,weights):
         
         # Form total population prior
-        p_chi = zeta_bulk*truncatedNormal(Xeff_sample,mu,sig,-1,1) + (1.-zeta_bulk)*truncatedNormal(Xeff_sample,0.,sig_eps,-1,1)
+        p_chi = (1.-zeta_spike)*truncatedNormal(Xeff_sample,mu,sig,-1,1) + zeta_spike*truncatedNormal(Xeff_sample,0.,sig_eps,-1,1)
         p_m2 = (1.+bq)*m2_sample**bq/(m1_sample**(1.+bq) - mMin**(1.+bq))
         p_m2 = jnp.where(m2_sample<mMin,0.,p_m2)
         mc_weights = p_chi*p_m2*weights
