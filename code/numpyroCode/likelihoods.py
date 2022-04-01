@@ -3,6 +3,7 @@ import numpyro.distributions as dist
 import jax.numpy as jnp
 from jax.scipy.special import erf
 from jax import vmap
+import numpy as np
 
 def truncatedNormal(samples,mu,sigma,lowCutoff,highCutoff):
 
