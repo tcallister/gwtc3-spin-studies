@@ -4,7 +4,7 @@ import jax.numpy as jnp
 from jax.scipy.special import erf
 from jax import vmap
 
-def gaussianDemo(sampleDict,sig_eps):
+def gaussianDemo(catalog):
 
     """
     Implementation of a Gaussian+Spike distribution for inference within `numpyro`.
@@ -26,43 +26,41 @@ def gaussianDemo(sampleDict,sig_eps):
     logsig_chi = numpyro.sample("logsig_chi",dist.Uniform(-1.5,0))
     sig = 10.**logsig_chi
 
-    # Also sample the mixture fraction governing the number of events in the bulk Gaussian.
+    # Also sample the mixture fraction governing the number of events in the spike Gaussian.
     # In order to faciliate more efficient sampling, we explicitly sample logit(zeta) rather than zeta directly.
     # This is then converted to zeta, and an appropriate term added to our log-likelihood to ensure
     # a uniform prior on zeta
-    logit_zeta_bulk = numpyro.sample("logit_zeta_bulk",dist.Normal(0,2))
-    zeta_bulk = jnp.exp(logit_zeta_bulk)/(1.+jnp.exp(logit_zeta_bulk)) 
-    numpyro.deterministic("zeta_bulk",zeta_bulk)
-    zeta_bulk_logprior = -0.5*logit_zeta_bulk**2/2**2 + jnp.log(1./zeta_bulk + 1./(1-zeta_bulk))
-    numpyro.factor("uniform_zeta_bulk_prior",-zeta_bulk_logprior)
+    logit_zeta_spike = numpyro.sample("logit_zeta_spike",dist.Normal(0,2))
+    zeta_spike = jnp.exp(logit_zeta_spike)/(1.+jnp.exp(logit_zeta_spike)) 
+    numpyro.deterministic("zeta_spike",zeta_spike)
+    zeta_spike_logprior = -0.5*logit_zeta_spike**2/2**2 + jnp.log(1./zeta_spike + 1./(1-zeta_spike))
+    numpyro.factor("uniform_zeta_spike_prior",-zeta_spike_logprior)
 
     # This function defines the per-event log-likelihood
     # x_sample: Mock likelihood samples 
-    def logp(x_sample):
+    def logp(x_obs,sigma_obs):
         
         # KDE likelihood; see paper text
-        sig_kde = 0.5*jnp.std(x_sample)*x_sample.size**(-1./5.)
-        bulk_denom = jnp.sqrt(2.*jnp.pi*(sig_kde**2+sig**2))*(erf((1.-mu)/jnp.sqrt(2.*sig**2)) + erf((1.+mu)/jnp.sqrt(2.*sig**2)))
-        spike_denom = jnp.sqrt(2.*jnp.pi*(sig_kde**2+sig_eps**2))*(erf(1./jnp.sqrt(2.*sig_eps**2)) + erf(1./jnp.sqrt(2.*sig_eps**2)))
-        bulk_kde_integrals = (erf((sig_kde**2*(1.+mu)+sig**2*(1.+x_sample))/jnp.sqrt(2.*sig_kde**2*sig**2*(sig_kde**2+sig**2)))\
-                            - erf((sig_kde**2*(mu-1.)+sig**2*(x_sample-1.))/jnp.sqrt(2.*sig_kde**2*sig**2*(sig_kde**2+sig**2))))\
-                        *jnp.exp(-(x_sample-mu)**2/(2.*(sig_kde**2+sig**2)))/bulk_denom
-        spike_kde_integrals = (erf((sig_kde**2+sig_eps**2*(1.+x_sample))/jnp.sqrt(2.*sig_kde**2*sig_eps**2*(sig_kde**2+sig_eps**2)))\
-                            - erf((sig_kde**2*(-1.)+sig_eps**2*(x_sample-1.))/jnp.sqrt(2.*sig_kde**2*sig_eps**2*(sig_kde**2+sig_eps**2))))\
-                        *jnp.exp(-x_sample**2/(2.*(sig_kde**2+sig_eps**2)))/spike_denom
+        sig_eps=0
+        bulk_denom = jnp.sqrt(2.*jnp.pi*(sigma_obs**2+sig**2))*(erf((1.-mu)/jnp.sqrt(2.*sig**2)) + erf((1.+mu)/jnp.sqrt(2.*sig**2)))
+        spike_denom = jnp.sqrt(2.*jnp.pi*(sigma_obs**2+sig_eps**2))*(erf(1./jnp.sqrt(2.*sig_eps**2)) + erf(1./jnp.sqrt(2.*sig_eps**2)))
+        bulk_kde_integrals = (erf((sigma_obs**2*(1.+mu)+sig**2*(1.+x_obs))/jnp.sqrt(2.*sigma_obs**2*sig**2*(sigma_obs**2+sig**2)))\
+                            - erf((sigma_obs**2*(mu-1.)+sig**2*(x_obs-1.))/jnp.sqrt(2.*sigma_obs**2*sig**2*(sigma_obs**2+sig**2))))\
+                        *jnp.exp(-(x_obs-mu)**2/(2.*(sigma_obs**2+sig**2)))/bulk_denom
+        spike_kde_integrals = (erf((sigma_obs**2+sig_eps**2*(1.+x_obs))/jnp.sqrt(2.*sigma_obs**2*sig_eps**2*(sigma_obs**2+sig_eps**2)))\
+                            - erf((sigma_obs**2*(-1.)+sig_eps**2*(x_obs-1.))/jnp.sqrt(2.*sigma_obs**2*sig_eps**2*(sigma_obs**2+sig_eps**2))))\
+                        *jnp.exp(-x_obs**2/(2.*(sigma_obs**2+sig_eps**2)))/spike_denom
     
         # Form total population prior
-        p_chi = zeta_bulk*bulk_kde_integrals + (1.-zeta_bulk)*spike_kde_integrals
+        p_chi = (1.-zeta_spike)*bulk_kde_integrals + zeta_spike*spike_kde_integrals
 
-        # Compute effective number of samples and return log-likelihood
-        n_eff = jnp.sum(p_chi)**2/jnp.sum(p_chi**2)     
-        return jnp.log(jnp.mean(p_chi)),n_eff
+        # Return log-likelihood
+        return jnp.log(p_chi)
     
     # Map the log-likelihood function over each event in our catalog
-    log_ps,n_effs = vmap(logp)(jnp.array([sampleDict[k] for k in sampleDict]))
-
-    # As a diagnostic, save minimum number of effective samples across all events
-    numpyro.deterministic('min_log_neff',jnp.min(jnp.log10(n_effs)))
+    log_ps = vmap(logp)(
+            jnp.array([catalog[k]['x_ml'] for k in catalog]),
+            jnp.array([catalog[k]['sig_obs'] for k in catalog]))
 
     # Tally log-likelihoods across our catalog
     numpyro.factor("logp",jnp.sum(log_ps))

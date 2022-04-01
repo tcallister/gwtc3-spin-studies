@@ -1,9 +1,7 @@
 import numpyro
 from numpyro.infer import NUTS,MCMC
 from jax import random
-import numpy as np
 import arviz as az
-import sys
 from likelihoods import gaussianSpike_MonteCarloAvg
 from getData import *
 
