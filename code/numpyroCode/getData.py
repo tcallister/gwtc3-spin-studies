@@ -46,9 +46,8 @@ def getInjections(mMin=5.0,
     m2_det = np.array(injectionDict['m2'])
     z_det = np.array(injectionDict['z'])
     Xeff_det = np.array(injectionDict['Xeff'])
-    Xp_det = np.array(injectionDict['Xp'])
     dVdz_det = np.array(injectionDict['dVdz'])
-    inj_weights = np.array(injectionDict['weights_XeffOnly'])
+    inj_weights = 1./(np.array(injectionDict['p_draw_chiEff'])*np.array(injectionDict['p_draw_m1m2z']))
 
     p_m1_det_pl = (1.+alpha)*m1_det**alpha/(mMax**(1.+alpha) - mMin**(1.+alpha))
     p_m1_det_peak = np.exp(-(m1_det-mu_m)**2./(2.*np.pi*sig_m**2))/np.sqrt(2.*np.pi*sig_m**2.)
@@ -62,6 +61,7 @@ def getInjections(mMin=5.0,
     p_m1_det *= smoothing
 
     p_z_det = dVdz_det*(1.+z_det)**(kappa-1)
+    
     pop_reweight = p_m1_det*p_z_det*inj_weights
     injectionDict['pop_reweight'] = pop_reweight
 
@@ -108,7 +108,11 @@ def getSamples(mMin=5.,
 
     # Dicts with samples:
     sampleDict = np.load("../input/sampleDict_FAR_1_in_1_yr.pickle",allow_pickle=True)
-    sampleDict.pop('S190814bv')
+
+    # Non-BBHs
+    non_BBHs = ['GW170817','S190425z','S190426c','S190814bv','S190917u','S200105ae','S200115j']
+    for event in non_BBHs:
+        sampleDict.pop(event)
 
     for event in sampleDict:
         print(event,len(sampleDict[event]['m1']))
@@ -119,6 +123,8 @@ def getSamples(mMin=5.,
         m1 = np.array(sampleDict[event]['m1'])
         m2 = np.array(sampleDict[event]['m2'])
         Xeff = np.array(sampleDict[event]['Xeff'])
+        z = np.array(sampleDict[event]['z'])
+        dVdz = np.array(sampleDict[event]['dVc_dz'])
         
         p_m1_pl = (1.+alpha)*m1**alpha/(mMax**(1.+alpha) - mMin**(1.+alpha))
         p_m1_peak = np.exp(-(m1-mu_m)**2./(2.*np.pi*sig_m**2))/np.sqrt(2.*np.pi*sig_m**2.)
@@ -130,8 +136,10 @@ def getSamples(mMin=5.,
         to_smooth = (m1>mMin)*(m1<delta_m)
         smoothing[to_smooth] = (np.exp(delta_m/m1[to_smooth] + delta_m/(m1[to_smooth]-delta_m)) + 1)**(-1.)
         p_m1 *= smoothing
-        
-        sampleDict[event]['weights_over_priors'] = sampleDict[event]['weights']*p_m1/sampleDict[event]['Xeff_priors']
+
+        p_z = dVdz*(1.+z)**(kappa-1)
+
+        sampleDict[event]['weights_over_priors'] = p_m1*p_z/(sampleDict[event]['Xeff_priors']*sampleDict[event]['z_prior'])
         inds_to_keep = np.random.choice(np.arange(m1.size),size=4000,replace=True)
         for key in sampleDict[event].keys():
             sampleDict[event][key] = sampleDict[event][key][inds_to_keep]
@@ -142,3 +150,4 @@ def getSamples(mMin=5.,
 
 if __name__=="__main__":
     getSamples()
+    getInjections()
