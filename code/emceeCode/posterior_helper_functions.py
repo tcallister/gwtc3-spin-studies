@@ -3,6 +3,31 @@ from scipy.special import erf
 from scipy.special import beta
 from math import gamma
 
+# Helper function to draw the initial walkers for emcee 
+def draw_initial_walkers_uniform(num_walkers, bounds): 
+    
+    """
+    Function to draw the initial walkers for emcee from a uniform distribution
+    
+    Parameters
+    ----------
+    num_walkers : int
+        number of walkers
+    bounds : tuple
+        upper and lower bounds for the uniform distribution
+        
+    Returns
+    -------
+    walkers : `numpy.array`
+        random array of length num_walkers
+    """
+    
+    upper_bound = bounds[1]
+    lower_bound = bounds[0]
+    walkers = np.random.random(num_walkers)*(upper_bound-lower_bound)+lower_bound
+    
+    return walkers
+
 
 def asym(x):
     

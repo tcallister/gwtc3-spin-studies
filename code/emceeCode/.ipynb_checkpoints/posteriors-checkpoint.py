@@ -45,7 +45,7 @@ def betaPlusMixture(c,sampleDict,injectionDict,priorDict):
     Bq = c[4]
     
     # Reject samples outside of our prior bounds for those with uniform priors
-    if muchi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
+    if mu_chi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
         return -np.inf
     elif sigma_chi < priorDict['sigma_chi'][0] or sigma_chi > priorDict['sigma_chi'][1]:
         return -np.inf
@@ -87,7 +87,9 @@ def betaPlusMixture(c,sampleDict,injectionDict,priorDict):
         m2_det = injectionDict['m2']
         z_det = injectionDict['z']
         dVdz_det = injectionDict['dVdz']
-        pop_reweight = injectionDict['weights_noSpin']
+        
+        # Draw probability for component spins, masses, + redshift
+        p_draw = injectionDict['p_draw_a1a2cost1cost2']*injectionDict['p_draw_m1m2z']
         
         # Detected spins
         p_chi1_det = betaDistribution(chi1_det, a, b)
@@ -101,7 +103,9 @@ def betaPlusMixture(c,sampleDict,injectionDict,priorDict):
         pdet_z = p_astro_z(z_det, dVdz_det)
         
         # Construct full weighting factors
-        det_weights = pdet_spins*pdet_masses*pdet_z*pop_reweight
+        p_det = pdet_spins*pdet_masses*pdet_z
+        det_weights = p_det/p_draw
+        
         if np.max(det_weights)==0:
             return -np.inf
         
@@ -209,7 +213,7 @@ def betaPlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
     Bq = c[5]
     
     # Reject samples outside of our prior bounds for those with uniform priors
-    if muchi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
+    if mu_chi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
         return -np.inf
     elif sigma_chi < priorDict['sigma_chi'][0] or sigma_chi > priorDict['sigma_chi'][1]:
         return -np.inf
@@ -253,7 +257,9 @@ def betaPlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
         m2_det = injectionDict['m2']
         z_det = injectionDict['z']
         dVdz_det = injectionDict['dVdz']
-        pop_reweight = injectionDict['weights_noSpin']
+        
+        # Draw probability for component spins, masses, + redshift
+        p_draw = injectionDict['p_draw_a1a2cost1cost2']*injectionDict['p_draw_m1m2z']
         
         # Detected spins
         p_chi1_det = betaDistribution(chi1_det, a, b)
@@ -267,7 +273,9 @@ def betaPlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
         pdet_z = p_astro_z(z_det, dVdz_det)
         
         # Construct full weighting factors
-        det_weights = pdet_spins*pdet_masses*pdet_z*pop_reweight
+        p_det = pdet_spins*pdet_masses*pdet_z
+        det_weights = p_det/p_draw
+        
         if np.max(det_weights)==0:
             return -np.inf
         
@@ -377,7 +385,7 @@ def betaSpikePlusMixture(c,sampleDict,injectionDict,priorDict):
     Bq = c[6]
     
     # Reject samples outside of our prior bounds for those with uniform priors
-    if muchi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
+    if mu_chi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
         return -np.inf
     elif sigma_chi < priorDict['sigma_chi'][0] or sigma_chi > priorDict['sigma_chi'][1]:
         return -np.inf
@@ -423,7 +431,9 @@ def betaSpikePlusMixture(c,sampleDict,injectionDict,priorDict):
         m2_det = injectionDict['m2']
         z_det = injectionDict['z']
         dVdz_det = injectionDict['dVdz']
-        pop_reweight = injectionDict['weights_noSpin']
+        
+        # Draw probability for component spins, masses, + redshift
+        p_draw = injectionDict['p_draw_a1a2cost1cost2']*injectionDict['p_draw_m1m2z']
         
         # Detected spins
         p_chi1_det = betaDistributionPlusSpike(chi1_det, a, b, frac_in_spike, sigma_spike)
@@ -437,7 +447,9 @@ def betaSpikePlusMixture(c,sampleDict,injectionDict,priorDict):
         pdet_z = p_astro_z(z_det, dVdz_det)
         
         # Construct full weighting factors
-        det_weights = pdet_spins*pdet_masses*pdet_z*pop_reweight
+        p_det = pdet_spins*pdet_masses*pdet_z
+        det_weights = p_det/p_draw
+        
         if np.max(det_weights)==0:
             return -np.inf
         
@@ -550,7 +562,7 @@ def betaSpikePlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
     Bq = c[7]
     
     # Reject samples outside of our prior bounds for those with uniform priors
-    if muchi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
+    if mu_chi < priorDict['mu_chi'][0] or mu_chi > priorDict['mu_chi'][1]:
         return -np.inf
     elif sigma_chi < priorDict['sigma_chi'][0] or sigma_chi > priorDict['sigma_chi'][1]:
         return -np.inf
@@ -598,7 +610,9 @@ def betaSpikePlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
         m2_det = injectionDict['m2']
         z_det = injectionDict['z']
         dVdz_det = injectionDict['dVdz']
-        pop_reweight = injectionDict['weights_noSpin']
+        
+        # Draw probability for component spins, masses, + redshift
+        p_draw = injectionDict['p_draw_a1a2cost1cost2']*injectionDict['p_draw_m1m2z']
         
         # Detected spins
         p_chi1_det = betaDistributionPlusSpike(chi1_det, a, b, frac_in_spike, sigma_spike)
@@ -612,7 +626,9 @@ def betaSpikePlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
         pdet_z = p_astro_z(z_det, dVdz_det)
         
         # Construct full weighting factors
-        det_weights = pdet_spins*pdet_masses*pdet_z*pop_reweight
+        p_det = pdet_spins*pdet_masses*pdet_z
+        det_weights = p_det/p_draw
+        
         if np.max(det_weights)==0:
             return -np.inf
         
