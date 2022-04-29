@@ -6,6 +6,10 @@ import sys
 from posterior_helper_functions import draw_initial_walkers_uniform
 from posteriors import betaSpikePlusMixture
 from postprocessing import processEmceeChain 
+from downsample_sampleDict import downsample
+
+# set seed for reproducibility (number chosen arbitrarily)
+np.random.seed(2847)
 
 """
 Definitions and loading data
@@ -33,12 +37,22 @@ priorDict = {
 }
 
 # Load sampleDict
-sampleDict = np.load(froot+"code/input/sampleDict_FAR_1_in_1_yr.pickle", allow_pickle=True)
+sampleDict_full = np.load(froot+"code/input/sampleDict_FAR_1_in_1_yr.pickle", allow_pickle=True)
 
 # Get rid of non BBH events
 non_BBHs = ['GW170817','S190425z','S190426c','S190814bv','S190917u','S200105ae','S200115j']
 for event in non_BBHs:
-    sampleDict.pop(event)
+    sampleDict_full.pop(event)
+    
+# Downsample events
+events_more = [ # events that we want more samples for -- see downsample documentation
+    'S191109d', 'S191103a', 'S190728q', 'GW170729', 'S190519bj', 'S190620e', 
+    'S190805bq', 'S190517h', 'S190412m', 'GW151226', 'S191204r', 'S190719an', 
+    'S190521g', 'S191127p', 'S200128d', 'S190706ai', 'S190720a', 'S190929d', 
+    'S190527w', 'S200225q', 'S200129m', 'S191216ap', 'S190828j', 'S200216br', 
+    'S190602aq', 'S200224ca', 'S190925ad', 'S200209ab'
+]
+sampleDict = downsample(sampleDict_full, events_more)
 
 # Load injectionDict
 injectionDict = np.load(froot+"code/input/injectionDict_FAR_1_in_1.pickle", allow_pickle=True)
