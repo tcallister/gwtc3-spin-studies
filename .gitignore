@@ -4,3 +4,7 @@ code/emceeCode/__pycache__/
 code/emceeCode/check_progress.ipynb
 **/.ipynb_checkpoints/
 **/__pycache__/
+code/emceeCode/.tmp0/
+code/input/galaudage-data/
+figures/*.pdf
+figures/*.npy
