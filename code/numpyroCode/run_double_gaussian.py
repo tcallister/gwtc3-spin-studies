@@ -2,6 +2,8 @@ import numpyro
 from numpyro.infer import NUTS,MCMC
 from jax import random
 import arviz as az
+import numpy as np
+np.random.seed(190412)
 from likelihoods import doubleGaussian
 from getData import *
 
@@ -15,8 +17,8 @@ injectionDict = getInjections(mMin=mMin)
 sampleDict = getSamples(mMin=mMin)
 
 # Set up NUTS sampler over our likelihood
-kernel = NUTS(doubleGaussian)
-mcmc = MCMC(kernel,num_warmup=200,num_samples=2000,num_chains=nChains)
+kernel = NUTS(doubleGaussian,dense_mass=True)
+mcmc = MCMC(kernel,num_warmup=600,num_samples=3000,num_chains=nChains)
 
 # Choose a random key and run over our model
 rng_key = random.PRNGKey(2)

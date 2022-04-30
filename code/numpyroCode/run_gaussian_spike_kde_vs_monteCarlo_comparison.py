@@ -3,6 +3,8 @@ from numpyro.infer import NUTS,MCMC
 from jax import random
 import numpy as np
 import arviz as az
+import numpy as np
+np.random.seed(151012)
 from likelihoods import gaussianSpike,gaussianSpike_MonteCarloAvg
 from getData import *
 

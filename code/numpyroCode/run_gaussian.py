@@ -2,6 +2,8 @@ import numpyro
 from numpyro.infer import NUTS,MCMC
 from jax import random
 import arviz as az
+import numpy as np
+np.random.seed(150914)
 from likelihoods import gaussian
 from getData import *
 

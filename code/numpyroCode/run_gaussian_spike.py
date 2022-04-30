@@ -2,6 +2,8 @@ import numpyro
 from numpyro.infer import NUTS,MCMC
 from jax import random
 import arviz as az
+import numpy as np
+np.random.seed(151226)
 from likelihoods import gaussianSpike
 from getData import *
 
@@ -16,10 +18,10 @@ sampleDict = getSamples(mMin=mMin)
 
 # Set up NUTS sampler over our likelihood
 kernel = NUTS(gaussianSpike)
-mcmc = MCMC(kernel,num_warmup=300,num_samples=3000,num_chains=nChains)
+mcmc = MCMC(kernel,num_warmup=300,num_samples=4000,num_chains=nChains)
 
 # Choose a random key
-rng_key = random.PRNGKey(2)
+rng_key = random.PRNGKey(3)
 rng_key,rng_key_ = random.split(rng_key)
 
 # Run our model.
