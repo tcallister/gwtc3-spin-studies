@@ -99,7 +99,7 @@ else:
     print('\nOld chains found, loading and picking up where they left off ... ' )
     
     # Load existing file and iterate run version
-    old_chain = np.concatenate([np.load(chain) for chain in old_chains], axis=1)
+    old_chain = np.concatenate([np.load(chain, allow_pickle=True) for chain in old_chains], axis=1)
     run_version = int(old_chains[-1][-6:-4])+1
 
     # Strip off any trailing zeros due to incomplete run
@@ -165,7 +165,7 @@ if nSteps>0:
 
     # otherwise, put chains from all previous runs together 
     else:
-        previous_chains = [np.load(chain) for chain in old_chains]
+        previous_chains = [np.load(chain, allow_pickle=True) for chain in old_chains]
         previous_chains.append(sampler.chain)
         chainRaw = np.concatenate(previous_chains, axis=1)
 
