@@ -32,3 +32,4 @@ Contents:
     :maxdepth: 1
 
     effective-spin-models
+    componentspinmodels
