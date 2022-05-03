@@ -101,6 +101,7 @@ dependencies:
     - qtpy==2.0.1
     - requests==2.27.1
     - scipy==1.8.0
+    - seaborn==0.11.2
     - send2trash==1.8.0
     - six==1.16.0
     - snowballstemmer==2.2.0

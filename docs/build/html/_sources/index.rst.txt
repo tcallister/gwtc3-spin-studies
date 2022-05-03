@@ -31,4 +31,4 @@ Contents:
 .. toctree::
     :maxdepth: 1
 
-    test
+    effective-spin-models
