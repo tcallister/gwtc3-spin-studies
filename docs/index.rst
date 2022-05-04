@@ -34,3 +34,4 @@ Contents:
     getting-started
     test
     componentspinmodels
+    making-figures

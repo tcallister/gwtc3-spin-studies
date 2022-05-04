@@ -36,6 +36,15 @@ You can do this via
 
     $ XXXXX
 
-Some of our figures also contain data produced by [Galaudage]_ and hosted at
+Some of our figures also contain data produced by Galaudage+ (2021) [1]_ and hosted at https://github.com/shanikagalaudage/bbh_spin.
+If you want to regenerate figures, you'll want to clone this repository locally (making sure to check out files stored in git-lfs) and create a link to this repository in the :code:`code/input/` folder:
 
-.. [Galaudage] test
+.. code-block:: bash
+
+    $ cd [.../desired/filepath/...]
+    $ git clone git@github.com:shanikagalaudage/bbh_spin.git
+    $ cd [.../path/to/gwtc3-spin-studies]/code/input
+    $ ln -s [.../path/to/bbh_spin] galaudage-data
+
+
+.. [1] `Galaudage et al., ApJL 921, L15 (2021) <https://doi.org/10.3847/2041-8213/ac2f3c>`_

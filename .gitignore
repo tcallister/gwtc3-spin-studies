@@ -1,5 +1,6 @@
 code/emceeCode/.tmp/*.npy
 code/emceeCode/condor
+code/emceeCode/.ipynb_checkpoints/
 code/emceeCode/__pycache__/
 code/emceeCode/check_progress.ipynb
 **/.ipynb_checkpoints/
