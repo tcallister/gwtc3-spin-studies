@@ -8,7 +8,7 @@ Welcome to gwtc3-spin-studies's documentation!
 
 This page details the code used to produce the results presented in PAPERCITATION, which can be accessed at
 
-https://github.com/tcallister/gwtc3-spin-studes/
+https://github.com/tcallister/gwtc3-spin-studies/
 
 In this paper, we systematically explored the effective and component spin distributions of binary black holes among the LIGO/Virgo GWTC-3 catalog.
 In particular, we tried to answer the following core questions, which have been the subject of active exploration and some debate in the literature:
@@ -31,5 +31,6 @@ Contents:
 .. toctree::
     :maxdepth: 1
 
+    getting-started
     test
     componentspinmodels
