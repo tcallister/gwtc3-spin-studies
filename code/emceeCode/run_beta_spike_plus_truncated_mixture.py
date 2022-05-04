@@ -24,7 +24,7 @@ froot = "/home/simona.miller/gwtc3-spin-studies/"
 # Define emcee parameters
 nWalkers = 20       # number of walkers 
 dim = 8             # dimension of parameter space (number hyper params)
-nSteps = 45000      # number of steps for chain
+nSteps = 40000      # number of steps for chain
 
 # Set prior bounds (where applicable, same as Table XII in https://arxiv.org/pdf/2111.03634.pdf)
 priorDict = {

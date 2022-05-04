@@ -1,10 +1,10 @@
 Component spin models
 =====================
 
-In addition to looking in the effective spin domain, we explore features in the underlying binary black hole component spin magnitude and tilt angle distributions using several different models.
+We investigate potential features in the underlying binary black hole component spin magnitude and tilt angle distributions using several different models.
 
 Beta Plus Mixture |betaplusmixture-image|
--------------------------
+-----------------------------------------
 
 .. |betaplusmixture-image| image:: images/model-cartoons-beta.pdf
     :width: 250
@@ -21,7 +21,7 @@ and
 
      p(\cos\theta|f_\mathrm{iso},\sigma_t) = \frac{f_\mathrm{iso}}{2} + (1-f_\mathrm{iso}){\mathcal {N}}_{[-1,1]}(\cos\theta|1,\sigma_t)\,.
 
-Here the isotropic subpopulation is uniform on :math:`\cos\theta_i \in [-1,1]` and the aligned spin population is a truncated half gaussian :math: `\mathcal{N}` peaking at :math:`\cos\theta_i = 1` with a width :math:`\sigma_t`.
+Here the isotropic subpopulation is uniform over :math:`\cos\theta_i \in [-1,1]` and the aligned spin population is a truncated half gaussian :math:`\mathcal{N}` peaking at :math:`\cos\theta_i = 1` with a width :math:`\sigma_t`.
 
 This model can be rerun as follows: 
 
@@ -43,7 +43,7 @@ The output will be a .json file storing the resulting posterior samples:
     
 
 Beta Plus Truncated Mixture |betaplustruncmixture-image|
--------------------------
+--------------------------------------------------------
 
 .. |betaplustruncmixture-image| image:: images/model-cartoons-betaTruncated.pdf
     :width: 250
@@ -75,7 +75,7 @@ The output will be a .json file storing the resulting posterior samples:
     
     
 Beta Spike Plus Mixture |betaspikeplusmixture-image|
--------------------------
+----------------------------------------------------
 
 .. |betaspikeplusmixture-image| image:: images/model-cartoons-betaSpike.pdf
     :width: 250
@@ -87,7 +87,7 @@ Here, we keep the same :math:`\cos\theta_i` distribution as in Beta Plus Mixture
 
     p(\chi | \alpha, \beta, f_\mathrm{spike}, \epsilon_\mathrm{spike}) = f_\mathrm{spike}{\mathcal {N}}_{[0,1]}(\chi|0,\epsilon_\mathrm{spike}) + \frac{1-f_\mathrm{spike}}{c(\alpha,\beta)} \chi_i^{1-\alpha} \, (1-\chi_i)^{1-\beta}
 
-where :math:` f_\mathrm{spike}` is the fraction of the population in the spike, :math:` \epsilon_\mathrm{spike}` is the width of the spike, and :math:`c(\alpha,\beta)` is a normalization factor for the beta distribution (not a hyperparameter).
+where :math:`f_\mathrm{spike}` is the fraction of the population in the spike, :math:`\epsilon_\mathrm{spike}` is the width of the spike, and :math:`c(\alpha,\beta)` is a normalization factor for the beta distribution (not a hyperparameter).
 
 This model can be rerun as follows: 
 
@@ -110,14 +110,14 @@ The output will be a .json file storing the resulting posterior samples:
     
     
 Beta Spike Plus Truncated Mixture |betaspikeplustruncmixture-image|
--------------------------
+-------------------------------------------------------------------
 
 .. |betaspikeplustruncmixture-image| image:: images/model-cartoons-betaSpikeTrunc.pdf
     :width: 250
     
     
-In our model with the most features, we use :math:`\chi_i` distribution from Beta Spike Plus Mixture and the:math:`\cos\theta_i` distribution from Beta Plus Truncated Mixture. 
-
+In our model with the most features, we use :math:`\chi_i` distribution from Beta Spike Plus Mixture and the :math:`\cos\theta_i` distribution from Beta Plus Truncated Mixture. 
+ 
 This model can be rerun as follows: 
 
 .. code-block:: bash
