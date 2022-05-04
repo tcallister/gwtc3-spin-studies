@@ -4,7 +4,7 @@ import emcee as mc
 import json
 import sys
 from posterior_helper_functions import draw_initial_walkers_uniform
-from posteriors import betaSpikePlusTruncatedMixture
+from posteriors import betaSpikePlusTruncatedMixture_Galaudage
 from postprocessing import processEmceeChain 
 from downsample_sampleDict import downsample
 
@@ -16,7 +16,7 @@ Definitions and loading data
 """
 
 # Model 
-model = "component_spin_betaSpikePlusTruncatedMixture"
+model = "component_spin_betaSpikePlusTruncatedMixture_galaudage_comparison"
 
 # Repository root 
 froot = "/home/simona.miller/gwtc3-spin-studies/"
@@ -130,7 +130,7 @@ if nSteps>0: # if the run hasn't already finished
     sampler = mc.EnsembleSampler(
         nWalkers,
         dim,
-        betaSpikePlusTruncatedMixture, # model in posteriors.py
+        betaSpikePlusTruncatedMixture_Galaudage, # model in posteriors.py
         args=[sampleDict,injectionDict,priorDict], # arguments passed to betaPlusMixture
         threads=16
     )

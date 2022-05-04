@@ -4,7 +4,7 @@ import emcee as mc
 import json
 import sys
 from posterior_helper_functions import draw_initial_walkers_uniform
-from posteriors import betaSpikePlusTruncatedMixture
+from posteriors import betaSpikePlusTruncatedMixture_Galaudage
 from postprocessing import processEmceeChain 
 from downsample_sampleDict import downsample
 
@@ -16,7 +16,7 @@ Definitions and loading data
 """
 
 # Model 
-model = "component_spin_betaSpikePlusTruncatedMixture"
+model = "component_spin_betaSpikePlusTruncatedMixture_galaudage_comparison_just_gwtc2"
 
 # Repository root 
 froot = "/home/simona.miller/gwtc3-spin-studies/"
@@ -38,13 +38,31 @@ priorDict = {
 }
 
 # Load sampleDict
-sampleDict_full = np.load(froot+"code/input/sampleDict_FAR_1_in_1_yr.pickle", allow_pickle=True)
+sampleDict_all = np.load(froot+"code/input/sampleDict_FAR_1_in_1_yr.pickle", allow_pickle=True)
 
 # Get rid of non BBH events
 non_BBHs = ['GW170817','S190425z','S190426c','S190814bv','S190917u','S200105ae','S200115j']
 for event in non_BBHs:
-    sampleDict_full.pop(event)
+    sampleDict_all.pop(event)
     
+# Just fetch gwtc3 events 
+gwtc2_events = [
+    # O1, O2:
+    'GW150914', 'GW151012', 'GW151226', 'GW170104', 'GW170608', 'GW170729', 'GW170809',
+    'GW170814', 'GW170818', 'GW170823', 
+    # O3a (not including GWTC-2.1):
+    'S190408an', 'S190412m', 'S190413ac', 'S190413i', 'S190421ar', 'S190425z', 'S190426c', 
+    'S190503bf', 'S190512at', 'S190513bm', 'S190517h', 'S190519bj', 'S190521g', 'S190521r', 
+    'S190527w', 'S190602aq', 'S190620e', 'S190630ag', 'S190701ah', 'S190706ai', 'S190707q', 
+    'S190708ap', 'S190719an', 'S190720a', 'S190727h', 'S190728q', 'S190731aa', 'S190803e', 
+    'S190814bv', 'S190828j', 'S190828l', 'S190910s', 'S190915ak', 'S190924h', 'S190929d', 
+    'S190930s'
+]
+sampleDict_full = {}
+for event in gwtc2_events: 
+    if event in sampleDict_all:
+        sampleDict_full[event] = sampleDict_all[event]
+        
 # Downsample events
 events_more = [ # events that we want more samples for -- see downsample documentation
     'S191109d', 'S191103a', 'S190728q', 'GW170729', 'S190519bj', 'S190620e', 
@@ -130,7 +148,7 @@ if nSteps>0: # if the run hasn't already finished
     sampler = mc.EnsembleSampler(
         nWalkers,
         dim,
-        betaSpikePlusTruncatedMixture, # model in posteriors.py
+        betaSpikePlusTruncatedMixture_Galaudage, # model in posteriors.py
         args=[sampleDict,injectionDict,priorDict], # arguments passed to betaPlusMixture
         threads=16
     )
