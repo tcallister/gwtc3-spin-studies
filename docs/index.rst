@@ -32,6 +32,6 @@ Contents:
     :maxdepth: 1
 
     getting-started
-    test
+    effective-spin-models
     componentspinmodels
     making-figures
