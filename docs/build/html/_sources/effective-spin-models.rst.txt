@@ -27,7 +27,7 @@ The output will be a .cdf file storing the resulting posterior samples and diagn
 
 .. code-block:: bash
 
-    output/effective_spin_gaussian.cdf
+    data/effective_spin_gaussian.cdf
 
 .. note::
 
@@ -91,7 +91,7 @@ The output will be a .cdf file storing the resulting posterior samples and diagn
 
 .. code-block:: bash
 
-    output/effective_spin_doubleGaussians.cdf
+    data/effective_spin_doubleGaussians.cdf
 
 .. note::
 

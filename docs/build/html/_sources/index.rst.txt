@@ -31,5 +31,6 @@ Contents:
 .. toctree::
     :maxdepth: 1
 
-    test
+    getting-started
+    effective-spin-models
     componentspinmodels
