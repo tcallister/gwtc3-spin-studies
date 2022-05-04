@@ -34,3 +34,4 @@ Contents:
     getting-started
     effective-spin-models
     componentspinmodels
+    making-figures

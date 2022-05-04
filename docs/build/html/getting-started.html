@@ -45,6 +45,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="effective-spin-models.html">Effective spin models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="componentspinmodels.html">Component spin models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="making-figures.html">Figure generation</a></li>
 </ul>
 
         </div>
@@ -97,10 +98,17 @@ You can do this via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ XXXXX
 </pre></div>
 </div>
-<p>Some of our figures also contain data produced by <a class="reference internal" href="#galaudage" id="id1"><span>[Galaudage]</span></a> and hosted at</p>
-<dl class="citation">
-<dt class="label" id="galaudage"><span class="brackets"><a class="fn-backref" href="#id1">Galaudage</a></span></dt>
-<dd><p>test</p>
+<p>Some of our figures also contain data produced by Galaudage+ (2021) <a class="footnote-reference brackets" href="#id2" id="id1">1</a> and hosted at <a class="reference external" href="https://github.com/shanikagalaudage/bbh_spin">https://github.com/shanikagalaudage/bbh_spin</a>.
+If you want to regenerate figures, you’ll want to clone this repository locally (making sure to check out files stored in git-lfs) and create a link to this repository in the <code class="code docutils literal notranslate"><span class="pre">code/input/</span></code> folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> <span class="o">[</span>.../desired/filepath/...<span class="o">]</span>
+$ git clone git@github.com:shanikagalaudage/bbh_spin.git
+$ <span class="nb">cd</span> <span class="o">[</span>.../path/to/gwtc3-spin-studies<span class="o">]</span>/code/input
+$ ln -s <span class="o">[</span>.../path/to/bbh_spin<span class="o">]</span> galaudage-data
+</pre></div>
+</div>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p><a class="reference external" href="https://doi.org/10.3847/2041-8213/ac2f3c">Galaudage et al., ApJL 921, L15 (2021)</a></p>
 </dd>
 </dl>
 </section>
