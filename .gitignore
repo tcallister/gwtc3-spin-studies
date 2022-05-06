@@ -9,3 +9,5 @@ code/input/galaudage-data/
 figures/*.pdf
 figures/*.npy
 data/*.json
+data/*.cdf
+code/input/*.pickle
