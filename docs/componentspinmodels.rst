@@ -3,7 +3,7 @@ Component spin models
 
 We investigate potential features in the underlying binary black hole component spin magnitude and tilt angle distributions using several different models.
 
-Beta Plus Mixture |betaplusmixture-image|
+Beta + Mixture |betaplusmixture-image|
 -----------------------------------------
 
 .. |betaplusmixture-image| image:: images/model-cartoons-beta.pdf
@@ -42,7 +42,7 @@ The output will be a .json file storing the resulting posterior samples:
     A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found `here <https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_component_spin_beta_plus_mixture.ipynb>`__.
     
 
-Beta Plus Truncated Mixture |betaplustruncmixture-image|
+Beta + Truncated Mixture |betaplustruncmixture-image|
 --------------------------------------------------------
 
 .. |betaplustruncmixture-image| image:: images/model-cartoons-betaTruncated.pdf
@@ -74,7 +74,7 @@ The output will be a .json file storing the resulting posterior samples:
     
     
     
-Beta Spike Plus Mixture |betaspikeplusmixture-image|
+Beta Spike + Mixture |betaspikeplusmixture-image|
 ----------------------------------------------------
 
 .. |betaspikeplusmixture-image| image:: images/model-cartoons-betaSpike.pdf
@@ -109,7 +109,7 @@ The output will be a .json file storing the resulting posterior samples:
     
     
     
-Beta Spike Plus Truncated Mixture |betaspikeplustruncmixture-image|
+Beta Spike + Truncated Mixture |betaspikeplustruncmixture-image|
 -------------------------------------------------------------------
 
 .. |betaspikeplustruncmixture-image| image:: images/model-cartoons-betaSpikeTrunc.pdf
