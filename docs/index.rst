@@ -6,7 +6,7 @@
 Welcome to gwtc3-spin-studies's documentation!
 ==============================================
 
-This page details the code used to produce the results presented in PAPERCITATION, which can be accessed at
+This page details the code used to produce the results presented in *No evidence that the majority of black holes in binaries have zero spin*, which can be accessed at
 
 https://github.com/tcallister/gwtc3-spin-studies/
 

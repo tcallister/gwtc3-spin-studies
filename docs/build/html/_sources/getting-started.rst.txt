@@ -28,13 +28,18 @@ You can deactivate the environment using :code:`conda deactivate`
 Downloading input files and inference results
 ---------------------------------------------
 
-Datafiles containing the output of our inference codes are hosted on Zenodo, as are the input files loaded in by our inference code.
+Datafiles containing the output of our inference codes are hosted on Zenodo at https://doi.org/10.5281/zenodo.6505272, along with the input files loaded in by our inference code.
 If you want to regenerate figures or rerun any of our analyses, you'll need to download this input/output data locally.
 You can do this via
 
 .. code-block:: bash
 
-    $ XXXXX
+    $ cd data/
+    $ . download_data_from_zenodo.sh
+
+This script will populate the :code:`data/` directory with datafiles containing the output of our analyses.
+These output files can be inspected by running the jupyter notebooks also appearing in the :code:`data/` directory; see :ref:`Effective spin models` and :ref:`Component spin models` for some additional information.
+The script will also place several files in the :code:`code/input/` directory, which are needed to rerun analyses and/or regenerate figures.
 
 Some of our figures also contain data produced by Galaudage+ (2021) [1]_ and hosted at https://github.com/shanikagalaudage/bbh_spin.
 If you want to regenerate figures, you'll want to clone this repository locally (making sure to check out files stored in git-lfs) and create a link to this repository in the :code:`code/input/` folder:
