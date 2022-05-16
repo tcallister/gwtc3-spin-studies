@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6555167.svg)](https://doi.org/10.5281/zenodo.6555167)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6505272.svg)](https://doi.org/10.5281/zenodo.6505272)
 
 # gwtc3-spin-studies
