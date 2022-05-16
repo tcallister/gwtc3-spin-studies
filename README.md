@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6505273.svg)](https://doi.org/10.5281/zenodo.6505273)
+
 # gwtc3-spin-studies
 
 This repository holds code and data release products behind the paper "**No evidence that the majority of black holes in binaries have zero spin**"
