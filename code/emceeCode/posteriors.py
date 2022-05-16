@@ -13,11 +13,17 @@ def betaPlusMixture(c,sampleDict,injectionDict,priorDict):
     c : `numpy.array`
         array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, 
         sigma_cost, Bq ] where 
+        
         - mu_chi = mean of spin magnitude beta distribution
+        
         - sigma_chi = std. dev. of spin magnitude beta distribution 
+        
         - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution
+        
         - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution
+        
         - Bq = power law slope of the mass ratio distribution    
+        
     sampleDict : dict
         Precomputed dictionary containing posterior samples for each event in our catalog
     injectionDict : dict
@@ -179,12 +185,19 @@ def betaPlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
     c : `numpy.array`
         array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, 
         sigma_cost, cost_min, Bq ] where 
+        
         - mu_chi = mean of spin magnitude beta distribution
+        
         - sigma_chi = std. dev. of spin magnitude beta distribution 
+        
         - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution
+        
         - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution
+        
         - cost_min = lower truncation bound on the cosine tilt angle distribution
+        
         - Bq = power law slope of the mass ratio distribution    
+        
     sampleDict : dict
         Precomputed dictionary containing posterior samples for each event in our catalog
     injectionDict : dict
@@ -349,13 +362,21 @@ def betaSpikePlusMixture(c,sampleDict,injectionDict,priorDict):
     c : `numpy.array`
         array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, 
         sigma_cost, frac_in_spike, sigma_spike, Bq ] where 
+        
         - mu_chi = mean of spin magnitude beta distribution
+        
         - sigma_chi = std. dev. of spin magnitude beta distribution 
+        
         - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution
+        
         - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution
+        
         - frac_in_spike = mixing fraction in half gaussian spike at spin mag. = 0
+        
         - sigma_spike = std. dev. of half gaussian spike at spin mag. = 0
+        
         - Bq = power law slope of the mass ratio distribution    
+        
     sampleDict : dict
         Precomputed dictionary containing posterior samples for each event in our catalog
     injectionDict : dict
@@ -524,14 +545,23 @@ def betaSpikePlusTruncatedMixture(c,sampleDict,injectionDict,priorDict):
     c : `numpy.array`
         array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, 
         sigma_cost, frac_in_spike, sigma_spike, cost_min, Bq ] where 
+        
         - mu_chi = mean of spin magnitude beta distribution
+        
         - sigma_chi = std. dev. of spin magnitude beta distribution 
+        
         - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution
+        
         - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution
+        
         - frac_in_spike = mixing fraction in half gaussian spike at spin mag. = 0
+        
         - sigma_spike = std. dev. of half gaussian spike at spin mag. = 0
+        
         - cost_min = lower truncation bound on the cosine tilt angle distribution
+        
         - Bq = power law slope of the mass ratio distribution    
+        
     sampleDict : dict
         Precomputed dictionary containing posterior samples for each event in our catalog
     injectionDict : dict
@@ -704,14 +734,23 @@ def betaSpikePlusTruncatedMixture_Galaudage(c,sampleDict,injectionDict,priorDict
     c : `numpy.array`
         array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, 
         sigma_cost, frac_in_spike, sigma_spike, cost_min, Bq ] where 
+        
         - mu_chi = mean of spin magnitude beta distribution
+        
         - sigma_chi = std. dev. of spin magnitude beta distribution 
+        
         - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution
+        
         - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution
+        
         - frac_in_spike = mixing fraction in half gaussian spike at spin mag. = 0
+        
         - sigma_spike = std. dev. of half gaussian spike at spin mag. = 0
+        
         - cost_min = lower truncation bound on the cosine tilt angle distribution
+        
         - Bq = power law slope of the mass ratio distribution    
+        
     sampleDict : dict
         Precomputed dictionary containing posterior samples for each event in our catalog
     injectionDict : dict

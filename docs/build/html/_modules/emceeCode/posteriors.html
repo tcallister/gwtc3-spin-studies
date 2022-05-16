@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>emceeCode.posteriors &mdash; gwtc3-spin-studies  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> gwtc3-spin-studies
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../effective-spin-models.html">Effective spin models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../componentspinmodels.html">Component spin models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../making-figures.html">Figure generation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gwtc3-spin-studies</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>emceeCode.posteriors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for emceeCode.posteriors</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">posterior_helper_functions</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="betaPlusMixture"><a class="viewcode-back" href="../../componentspinmodels.html#emceeCode.posteriors.betaPlusMixture">[docs]</a><span class="k">def</span> <span class="nf">betaPlusMixture</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">sampleDict</span><span class="p">,</span><span class="n">injectionDict</span><span class="p">,</span><span class="n">priorDict</span><span class="p">):</span> 
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the Beta+Mixture model: a component spin distribution with spin magnitude </span>
+<span class="sd">    as a beta distribution and the cosine of the tilt angle as a mixture of aligned + isotropic, </span>
+<span class="sd">    for inference within `emcee`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c : `numpy.array`</span>
+<span class="sd">        array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, </span>
+<span class="sd">        sigma_cost, Bq ] where </span>
+<span class="sd">        </span>
+<span class="sd">        - mu_chi = mean of spin magnitude beta distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_chi = std. dev. of spin magnitude beta distribution </span>
+<span class="sd">        </span>
+<span class="sd">        - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - Bq = power law slope of the mass ratio distribution    </span>
+<span class="sd">        </span>
+<span class="sd">    sampleDict : dict</span>
+<span class="sd">        Precomputed dictionary containing posterior samples for each event in our catalog</span>
+<span class="sd">    injectionDict : dict</span>
+<span class="sd">        Precomputed dictionary containing successfully recovered injections</span>
+<span class="sd">    priorDict : dict</span>
+<span class="sd">        Precomputed dictionary containing bounds for the priors on each hyper-parameter</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logP : float</span>
+<span class="sd">        log posterior for the input sample &#39;c&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Make sure hyper-sample is the right length</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">==</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;Input sample has wrong length&#39;</span>
+    
+    <span class="c1"># Number of events </span>
+    <span class="n">nEvents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sampleDict</span><span class="p">)</span>
+    
+    <span class="c1"># Unpack hyper-parameters</span>
+    <span class="n">mu_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sigma_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">MF_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> 
+    <span class="n">sigma_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">Bq</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    
+    <span class="c1"># Reject samples outside of our prior bounds for those with uniform priors</span>
+    <span class="k">if</span> <span class="n">mu_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">mu_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">MF_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">MF_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    
+    <span class="c1"># If the sample falls inside our prior range, continue</span>
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="c1"># Initialize log-posterior</span>
+        <span class="n">logP</span> <span class="o">=</span> <span class="mf">0.</span>
+        
+        <span class="c1"># Translate mu_chi and sigma_chi to beta function parameters a and b </span>
+        <span class="c1"># See: https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_variance</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mu_sigma2_to_a_b</span><span class="p">(</span><span class="n">mu_chi</span><span class="p">,</span> <span class="n">sigma_chi</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+        
+        <span class="c1"># Impose cut on a and b: must be greater then or equal to 1 in order</span>
+        <span class="c1"># for distribution to go to 0 at chi=0 and chi=1</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">&lt;=</span><span class="mf">1.</span> <span class="ow">or</span> <span class="n">b</span><span class="o">&lt;=</span><span class="mf">1.</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># To match the gwtc-3 catalog, we want our hyper prior uniform in sigma^2_chi </span>
+        <span class="c1"># not sigma_chi</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sigma_chi</span><span class="p">)</span>
+        
+        <span class="c1"># Prior on Bq - gaussian centered at 0 with sigma=3</span>
+        <span class="n">logP</span> <span class="o">-=</span> <span class="p">(</span><span class="n">Bq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">18.</span> 
+        
+        <span class="c1"># --- Selection effects --- </span>
+    
+        <span class="c1"># Unpack injections</span>
+        <span class="n">chi1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+        <span class="n">chi2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+        <span class="n">cost1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+        <span class="n">cost2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+        <span class="n">m1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+        <span class="n">m2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+        <span class="n">z_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+        <span class="n">dVdz_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;dVdz&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Draw probability for component spins, masses, + redshift</span>
+        <span class="n">p_draw</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_a1a2cost1cost2&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_m1m2z&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Detected spins</span>
+        <span class="n">p_chi1_det</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi1_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">p_chi2_det</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi2_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">p_cost1_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">p_cost2_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">pdet_spins</span> <span class="o">=</span> <span class="n">p_chi1_det</span><span class="o">*</span><span class="n">p_chi2_det</span><span class="o">*</span><span class="n">p_cost1_det</span><span class="o">*</span><span class="n">p_cost2_det</span>
+        
+        <span class="c1"># Detected masses and redshifts</span>
+        <span class="n">pdet_masses</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_det</span><span class="p">,</span> <span class="n">m2_det</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+        <span class="n">pdet_z</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_det</span><span class="p">,</span> <span class="n">dVdz_det</span><span class="p">)</span>
+        
+        <span class="c1"># Construct full weighting factors</span>
+        <span class="n">p_det</span> <span class="o">=</span> <span class="n">pdet_spins</span><span class="o">*</span><span class="n">pdet_masses</span><span class="o">*</span><span class="n">pdet_z</span>
+        <span class="n">det_weights</span> <span class="o">=</span> <span class="n">p_det</span><span class="o">/</span><span class="n">p_draw</span>
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Check for sufficient sampling size</span>
+        <span class="c1"># Specifically require 4*Ndet effective detections, according to https://arxiv.org/abs/1904.10879</span>
+        <span class="n">Nsamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Nsamp</span><span class="o">&lt;=</span><span class="mi">4</span><span class="o">*</span><span class="n">nEvents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Calculate detection efficiency and add to log posterior</span>
+        <span class="n">log_detEff</span> <span class="o">=</span> <span class="o">-</span><span class="n">nEvents</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">))</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">log_detEff</span>
+        
+        <span class="c1"># --- Loop across BBH events ---</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">sampleDict</span><span class="p">:</span>
+
+            <span class="c1"># Unpack posterior samples for this event</span>
+            <span class="n">chi1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+            <span class="n">chi2_samples</span> <span class="o">=</span>  <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+            <span class="n">cost1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+            <span class="n">cost2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+            <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+            <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+            <span class="n">z_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+            <span class="n">z_prior_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z_prior&#39;</span><span class="p">]</span>
+            <span class="n">dVdz_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;dVc_dz&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># Evaluate model at the locations of samples for this event</span>
+            <span class="n">p_chi1</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi1_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">p_chi2</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi2_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">p_cost1</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="n">p_cost2</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            
+            <span class="c1"># Pop dist for all four params combined is a product of each four individual dists</span>
+            <span class="n">pSpins</span> <span class="o">=</span> <span class="n">p_chi1</span><span class="o">*</span><span class="n">p_chi2</span><span class="o">*</span><span class="n">p_cost1</span><span class="o">*</span><span class="n">p_cost2</span>
+            
+            <span class="c1"># PE priors for chi_i and cost_i are all uniform, so we set them to unity here</span>
+            <span class="n">nSamples</span> <span class="o">=</span> <span class="n">pSpins</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">spin_PE_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span>
+            
+            <span class="c1"># Need to reweight by astrophysical priors on m1, m2, z ...</span>
+            <span class="c1"># - p(m1)*p(m2)</span>
+            <span class="n">p_astro_m1_m2</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_samples</span><span class="p">,</span> <span class="n">m2_samples</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+            <span class="n">old_m1_m2_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span> <span class="c1"># PE prior on masses is uniform in component masses</span>
+            <span class="c1"># - p(z)</span>
+            <span class="n">p_astro_redshift</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_samples</span><span class="p">,</span> <span class="n">dVdz_samples</span><span class="p">)</span>
+            <span class="c1"># - For full m1, m2, z prior reweighting: </span>
+            <span class="n">m1_m2_z_prior_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_astro_m1_m2</span><span class="o">/</span><span class="n">old_m1_m2_prior</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">p_astro_redshift</span><span class="o">/</span><span class="n">z_prior_samples</span><span class="p">)</span>
+            
+            <span class="c1"># Sum over probabilities to get the marginalized likelihood for this event</span>
+            <span class="n">pEvidence</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">nSamples</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pSpins</span><span class="o">*</span><span class="n">m1_m2_z_prior_ratio</span><span class="o">/</span><span class="n">spin_PE_prior</span><span class="p">)</span>
+
+            <span class="c1"># Add to our running total</span>
+            <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pEvidence</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">logP</span><span class="o">!=</span><span class="n">logP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logP</span>   </div>
+
+<div class="viewcode-block" id="betaPlusTruncatedMixture"><a class="viewcode-back" href="../../componentspinmodels.html#emceeCode.posteriors.betaPlusTruncatedMixture">[docs]</a><span class="k">def</span> <span class="nf">betaPlusTruncatedMixture</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">sampleDict</span><span class="p">,</span><span class="n">injectionDict</span><span class="p">,</span><span class="n">priorDict</span><span class="p">):</span> 
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the Beta+TruncatedMixture model: a component spin distribution with spin </span>
+<span class="sd">    magnitude  as a beta distribution and the cosine of the tilt angle as a mixture of aligned + isotropic </span>
+<span class="sd">    with a lower truncation, for inference within `emcee`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c : `numpy.array`</span>
+<span class="sd">        array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, </span>
+<span class="sd">        sigma_cost, cost_min, Bq ] where </span>
+<span class="sd">        </span>
+<span class="sd">        - mu_chi = mean of spin magnitude beta distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_chi = std. dev. of spin magnitude beta distribution </span>
+<span class="sd">        </span>
+<span class="sd">        - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - cost_min = lower truncation bound on the cosine tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - Bq = power law slope of the mass ratio distribution    </span>
+<span class="sd">        </span>
+<span class="sd">    sampleDict : dict</span>
+<span class="sd">        Precomputed dictionary containing posterior samples for each event in our catalog</span>
+<span class="sd">    injectionDict : dict</span>
+<span class="sd">        Precomputed dictionary containing successfully recovered injections</span>
+<span class="sd">    priorDict : dict</span>
+<span class="sd">        Precomputed dictionary containing bounds for the priors on each hyper-parameter</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logP : float</span>
+<span class="sd">        log posterior for the input sample &#39;c&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Make sure hyper-sample is the right length</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">==</span><span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;Input sample has wrong length&#39;</span>
+    
+    <span class="c1"># Number of events </span>
+    <span class="n">nEvents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sampleDict</span><span class="p">)</span>
+    
+    <span class="c1"># Unpack hyper-parameters</span>
+    <span class="n">mu_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sigma_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">MF_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> 
+    <span class="n">sigma_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">cost_min</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">Bq</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    
+    <span class="c1"># Reject samples outside of our prior bounds for those with uniform priors</span>
+    <span class="k">if</span> <span class="n">mu_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">mu_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">MF_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">MF_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">cost_min</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;cost_min&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">cost_min</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;cost_min&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    
+    <span class="c1"># If the sample falls inside our prior range, continue</span>
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="c1"># Initialize log-posterior</span>
+        <span class="n">logP</span> <span class="o">=</span> <span class="mf">0.</span>
+        
+        <span class="c1"># Translate mu_chi and sigma_chi to beta function parameters a and b </span>
+        <span class="c1"># See: https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_variance</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mu_sigma2_to_a_b</span><span class="p">(</span><span class="n">mu_chi</span><span class="p">,</span> <span class="n">sigma_chi</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+        
+        <span class="c1"># Impose cut on a and b: must be greater then or equal to 1 in order</span>
+        <span class="c1"># for distribution to go to 0 at chi=0 and chi=1</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">&lt;=</span><span class="mf">1.</span> <span class="ow">or</span> <span class="n">b</span><span class="o">&lt;=</span><span class="mf">1.</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># To match the gwtc-3 catalog, we want our hyper prior uniform in sigma^2_chi </span>
+        <span class="c1"># not sigma_chi</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sigma_chi</span><span class="p">)</span>
+        
+        <span class="c1"># Prior on Bq - gaussian centered at 0 with sigma=3</span>
+        <span class="n">logP</span> <span class="o">-=</span> <span class="p">(</span><span class="n">Bq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">18.</span> 
+        
+        <span class="c1"># --- Selection effects --- </span>
+    
+        <span class="c1"># Unpack injections</span>
+        <span class="n">chi1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+        <span class="n">chi2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+        <span class="n">cost1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+        <span class="n">cost2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+        <span class="n">m1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+        <span class="n">m2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+        <span class="n">z_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+        <span class="n">dVdz_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;dVdz&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Draw probability for component spins, masses, + redshift</span>
+        <span class="n">p_draw</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_a1a2cost1cost2&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_m1m2z&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Detected spins</span>
+        <span class="n">p_chi1_det</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi1_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">p_chi2_det</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi2_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">p_cost1_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">p_cost2_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">pdet_spins</span> <span class="o">=</span> <span class="n">p_chi1_det</span><span class="o">*</span><span class="n">p_chi2_det</span><span class="o">*</span><span class="n">p_cost1_det</span><span class="o">*</span><span class="n">p_cost2_det</span>
+        
+        <span class="c1"># Detected masses and redshifts</span>
+        <span class="n">pdet_masses</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_det</span><span class="p">,</span> <span class="n">m2_det</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+        <span class="n">pdet_z</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_det</span><span class="p">,</span> <span class="n">dVdz_det</span><span class="p">)</span>
+        
+        <span class="c1"># Construct full weighting factors</span>
+        <span class="n">p_det</span> <span class="o">=</span> <span class="n">pdet_spins</span><span class="o">*</span><span class="n">pdet_masses</span><span class="o">*</span><span class="n">pdet_z</span>
+        <span class="n">det_weights</span> <span class="o">=</span> <span class="n">p_det</span><span class="o">/</span><span class="n">p_draw</span>
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Check for sufficient sampling size</span>
+        <span class="c1"># Specifically require 4*Ndet effective detections, according to https://arxiv.org/abs/1904.10879</span>
+        <span class="n">Nsamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Nsamp</span><span class="o">&lt;=</span><span class="mi">4</span><span class="o">*</span><span class="n">nEvents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Calculate detection efficiency and add to log posterior</span>
+        <span class="n">log_detEff</span> <span class="o">=</span> <span class="o">-</span><span class="n">nEvents</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">))</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">log_detEff</span>
+        
+        <span class="c1"># --- Loop across BBH events ---</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">sampleDict</span><span class="p">:</span>
+
+            <span class="c1"># Unpack posterior samples for this event</span>
+            <span class="n">chi1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+            <span class="n">chi2_samples</span> <span class="o">=</span>  <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+            <span class="n">cost1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+            <span class="n">cost2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+            <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+            <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+            <span class="n">z_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+            <span class="n">z_prior_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z_prior&#39;</span><span class="p">]</span>
+            <span class="n">dVdz_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;dVc_dz&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># Evaluate model at the locations of samples for this event</span>
+            <span class="n">p_chi1</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi1_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">p_chi2</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi2_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">p_cost1</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="n">p_cost2</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            
+            <span class="c1"># Pop dist for all four params combined is a product of each four individual dists</span>
+            <span class="n">pSpins</span> <span class="o">=</span> <span class="n">p_chi1</span><span class="o">*</span><span class="n">p_chi2</span><span class="o">*</span><span class="n">p_cost1</span><span class="o">*</span><span class="n">p_cost2</span>
+            
+            <span class="c1"># PE priors for chi_i and cost_i are all uniform, so we set them to unity here</span>
+            <span class="n">nSamples</span> <span class="o">=</span> <span class="n">pSpins</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">spin_PE_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span>
+            
+            <span class="c1"># Need to reweight by astrophysical priors on m1, m2, z ...</span>
+            <span class="c1"># - p(m1)*p(m2)</span>
+            <span class="n">p_astro_m1_m2</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_samples</span><span class="p">,</span> <span class="n">m2_samples</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+            <span class="n">old_m1_m2_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span> <span class="c1"># PE prior on masses is uniform in component masses</span>
+            <span class="c1"># - p(z)</span>
+            <span class="n">p_astro_redshift</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_samples</span><span class="p">,</span> <span class="n">dVdz_samples</span><span class="p">)</span>
+            <span class="c1"># - For full m1, m2, z prior reweighting: </span>
+            <span class="n">m1_m2_z_prior_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_astro_m1_m2</span><span class="o">/</span><span class="n">old_m1_m2_prior</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">p_astro_redshift</span><span class="o">/</span><span class="n">z_prior_samples</span><span class="p">)</span>
+            
+            <span class="c1"># Sum over probabilities to get the marginalized likelihood for this event</span>
+            <span class="n">pEvidence</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">nSamples</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pSpins</span><span class="o">*</span><span class="n">m1_m2_z_prior_ratio</span><span class="o">/</span><span class="n">spin_PE_prior</span><span class="p">)</span>
+
+            <span class="c1"># Add to our running total</span>
+            <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pEvidence</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">logP</span><span class="o">!=</span><span class="n">logP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logP</span></div>
+
+<div class="viewcode-block" id="betaSpikePlusMixture"><a class="viewcode-back" href="../../componentspinmodels.html#emceeCode.posteriors.betaSpikePlusMixture">[docs]</a><span class="k">def</span> <span class="nf">betaSpikePlusMixture</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">sampleDict</span><span class="p">,</span><span class="n">injectionDict</span><span class="p">,</span><span class="n">priorDict</span><span class="p">):</span> 
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the BetaSpike+Mixture model: a component spin distribution with spin magnitude</span>
+<span class="sd">    as a beta distribution + a half gaussian &quot;spike&quot; centered at 0 and the cosine of the tilt  </span>
+<span class="sd">    angle as a mixture of aligned + isotropic, for inference within `emcee`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c : `numpy.array`</span>
+<span class="sd">        array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, </span>
+<span class="sd">        sigma_cost, frac_in_spike, sigma_spike, Bq ] where </span>
+<span class="sd">        </span>
+<span class="sd">        - mu_chi = mean of spin magnitude beta distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_chi = std. dev. of spin magnitude beta distribution </span>
+<span class="sd">        </span>
+<span class="sd">        - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - frac_in_spike = mixing fraction in half gaussian spike at spin mag. = 0</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_spike = std. dev. of half gaussian spike at spin mag. = 0</span>
+<span class="sd">        </span>
+<span class="sd">        - Bq = power law slope of the mass ratio distribution    </span>
+<span class="sd">        </span>
+<span class="sd">    sampleDict : dict</span>
+<span class="sd">        Precomputed dictionary containing posterior samples for each event in our catalog</span>
+<span class="sd">    injectionDict : dict</span>
+<span class="sd">        Precomputed dictionary containing successfully recovered injections</span>
+<span class="sd">    priorDict : dict</span>
+<span class="sd">        Precomputed dictionary containing bounds for the priors on each hyper-parameter</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logP : float</span>
+<span class="sd">        log posterior for the input sample &#39;c&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Make sure hyper-sample is the right length</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">==</span><span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;Input sample has wrong length&#39;</span>
+    
+    <span class="c1"># Number of events </span>
+    <span class="n">nEvents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sampleDict</span><span class="p">)</span>
+    
+    <span class="c1"># Unpack hyper-parameters</span>
+    <span class="n">mu_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sigma_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">MF_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> 
+    <span class="n">sigma_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">frac_in_spike</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">sigma_spike</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">Bq</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+    
+    <span class="c1"># Reject samples outside of our prior bounds for those with uniform priors</span>
+    <span class="k">if</span> <span class="n">mu_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">mu_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">MF_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">MF_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">frac_in_spike</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;frac_in_spike&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">frac_in_spike</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;frac_in_spike&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_spike</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_spike&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_spike</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_spike&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># If the sample falls inside our prior range, continue</span>
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="c1"># Initialize log-posterior</span>
+        <span class="n">logP</span> <span class="o">=</span> <span class="mf">0.</span>
+        
+        <span class="c1"># Translate mu_chi and sigma_chi to beta function parameters a and b </span>
+        <span class="c1"># See: https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_variance</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mu_sigma2_to_a_b</span><span class="p">(</span><span class="n">mu_chi</span><span class="p">,</span> <span class="n">sigma_chi</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+        
+        <span class="c1"># Impose cut on a and b: must be greater then or equal to 1 in order</span>
+        <span class="c1"># for distribution to go to 0 at chi=0 and chi=1</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">&lt;=</span><span class="mf">1.</span> <span class="ow">or</span> <span class="n">b</span><span class="o">&lt;=</span><span class="mf">1.</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># To match the gwtc-3 catalog, we want our hyper prior uniform in sigma^2_chi </span>
+        <span class="c1"># not sigma_chi</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sigma_chi</span><span class="p">)</span>
+        
+        <span class="c1"># Prior on Bq - gaussian centered at 0 with sigma=3</span>
+        <span class="n">logP</span> <span class="o">-=</span> <span class="p">(</span><span class="n">Bq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">18.</span> 
+        
+        <span class="c1"># --- Selection effects --- </span>
+    
+        <span class="c1"># Unpack injections</span>
+        <span class="n">chi1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+        <span class="n">chi2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+        <span class="n">cost1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+        <span class="n">cost2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+        <span class="n">m1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+        <span class="n">m2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+        <span class="n">z_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+        <span class="n">dVdz_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;dVdz&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Draw probability for component spins, masses, + redshift</span>
+        <span class="n">p_draw</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_a1a2cost1cost2&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_m1m2z&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Detected spins</span>
+        <span class="n">p_chi1_det</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi1_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+        <span class="n">p_chi2_det</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi2_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+        <span class="n">p_cost1_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">p_cost2_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">pdet_spins</span> <span class="o">=</span> <span class="n">p_chi1_det</span><span class="o">*</span><span class="n">p_chi2_det</span><span class="o">*</span><span class="n">p_cost1_det</span><span class="o">*</span><span class="n">p_cost2_det</span>
+        
+        <span class="c1"># Detected masses and redshifts</span>
+        <span class="n">pdet_masses</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_det</span><span class="p">,</span> <span class="n">m2_det</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+        <span class="n">pdet_z</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_det</span><span class="p">,</span> <span class="n">dVdz_det</span><span class="p">)</span>
+        
+        <span class="c1"># Construct full weighting factors</span>
+        <span class="n">p_det</span> <span class="o">=</span> <span class="n">pdet_spins</span><span class="o">*</span><span class="n">pdet_masses</span><span class="o">*</span><span class="n">pdet_z</span>
+        <span class="n">det_weights</span> <span class="o">=</span> <span class="n">p_det</span><span class="o">/</span><span class="n">p_draw</span>
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Check for sufficient sampling size</span>
+        <span class="c1"># Specifically require 4*Ndet effective detections, according to https://arxiv.org/abs/1904.10879</span>
+        <span class="n">Nsamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Nsamp</span><span class="o">&lt;=</span><span class="mi">4</span><span class="o">*</span><span class="n">nEvents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Calculate detection efficiency and add to log posterior</span>
+        <span class="n">log_detEff</span> <span class="o">=</span> <span class="o">-</span><span class="n">nEvents</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">))</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">log_detEff</span>
+        
+        <span class="c1"># --- Loop across BBH events ---</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">sampleDict</span><span class="p">:</span>
+
+            <span class="c1"># Unpack posterior samples for this event</span>
+            <span class="n">chi1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+            <span class="n">chi2_samples</span> <span class="o">=</span>  <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+            <span class="n">cost1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+            <span class="n">cost2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+            <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+            <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+            <span class="n">z_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+            <span class="n">z_prior_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z_prior&#39;</span><span class="p">]</span>
+            <span class="n">dVdz_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;dVc_dz&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># Evaluate model at the locations of samples for this event</span>
+            <span class="n">p_chi1</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi1_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+            <span class="n">p_chi2</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi2_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+            <span class="n">p_cost1</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="n">p_cost2</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            
+            <span class="c1"># Pop dist for all four params combined is a product of each four individual dists</span>
+            <span class="n">pSpins</span> <span class="o">=</span> <span class="n">p_chi1</span><span class="o">*</span><span class="n">p_chi2</span><span class="o">*</span><span class="n">p_cost1</span><span class="o">*</span><span class="n">p_cost2</span>
+            
+            <span class="c1"># PE priors for chi_i and cost_i are all uniform, so we set them to unity here</span>
+            <span class="n">nSamples</span> <span class="o">=</span> <span class="n">pSpins</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">spin_PE_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span>
+            
+            <span class="c1"># Need to reweight by astrophysical priors on m1, m2, z ...</span>
+            <span class="c1"># - p(m1)*p(m2)</span>
+            <span class="n">p_astro_m1_m2</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_samples</span><span class="p">,</span> <span class="n">m2_samples</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+            <span class="n">old_m1_m2_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span> <span class="c1"># PE prior on masses is uniform in component masses</span>
+            <span class="c1"># - p(z)</span>
+            <span class="n">p_astro_redshift</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_samples</span><span class="p">,</span> <span class="n">dVdz_samples</span><span class="p">)</span>
+            <span class="c1"># - For full m1, m2, z prior reweighting: </span>
+            <span class="n">m1_m2_z_prior_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_astro_m1_m2</span><span class="o">/</span><span class="n">old_m1_m2_prior</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">p_astro_redshift</span><span class="o">/</span><span class="n">z_prior_samples</span><span class="p">)</span>
+            
+            <span class="c1"># Sum over probabilities to get the marginalized likelihood for this event</span>
+            <span class="n">pEvidence</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">nSamples</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pSpins</span><span class="o">*</span><span class="n">m1_m2_z_prior_ratio</span><span class="o">/</span><span class="n">spin_PE_prior</span><span class="p">)</span>
+
+            <span class="c1"># Add to our running total</span>
+            <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pEvidence</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">logP</span><span class="o">!=</span><span class="n">logP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logP</span>  </div>
+
+
+<div class="viewcode-block" id="betaSpikePlusTruncatedMixture"><a class="viewcode-back" href="../../componentspinmodels.html#emceeCode.posteriors.betaSpikePlusTruncatedMixture">[docs]</a><span class="k">def</span> <span class="nf">betaSpikePlusTruncatedMixture</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">sampleDict</span><span class="p">,</span><span class="n">injectionDict</span><span class="p">,</span><span class="n">priorDict</span><span class="p">):</span> 
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the BetaSpike+TruncatedMixture model: a component spin distribution with spin </span>
+<span class="sd">    magnitude  as a beta distribution + a half gaussian &quot;spike&quot; centered at 0 and the cosine of the tilt  </span>
+<span class="sd">    angle as a mixture of aligned + isotropic with a lower truncation, for inference within `emcee`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c : `numpy.array`</span>
+<span class="sd">        array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, </span>
+<span class="sd">        sigma_cost, frac_in_spike, sigma_spike, cost_min, Bq ] where </span>
+<span class="sd">        </span>
+<span class="sd">        - mu_chi = mean of spin magnitude beta distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_chi = std. dev. of spin magnitude beta distribution </span>
+<span class="sd">        </span>
+<span class="sd">        - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - frac_in_spike = mixing fraction in half gaussian spike at spin mag. = 0</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_spike = std. dev. of half gaussian spike at spin mag. = 0</span>
+<span class="sd">        </span>
+<span class="sd">        - cost_min = lower truncation bound on the cosine tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - Bq = power law slope of the mass ratio distribution    </span>
+<span class="sd">        </span>
+<span class="sd">    sampleDict : dict</span>
+<span class="sd">        Precomputed dictionary containing posterior samples for each event in our catalog</span>
+<span class="sd">    injectionDict : dict</span>
+<span class="sd">        Precomputed dictionary containing successfully recovered injections</span>
+<span class="sd">    priorDict : dict</span>
+<span class="sd">        Precomputed dictionary containing bounds for the priors on each hyper-parameter</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logP : float</span>
+<span class="sd">        log posterior for the input sample &#39;c&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Make sure hyper-sample is the right length</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">==</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;Input sample has wrong length&#39;</span>
+    
+    <span class="c1"># Number of events </span>
+    <span class="n">nEvents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sampleDict</span><span class="p">)</span>
+    
+    <span class="c1"># Unpack hyper-parameters</span>
+    <span class="n">mu_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sigma_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">MF_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> 
+    <span class="n">sigma_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">frac_in_spike</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">sigma_spike</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">cost_min</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">Bq</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+    
+    <span class="c1"># Reject samples outside of our prior bounds for those with uniform priors</span>
+    <span class="k">if</span> <span class="n">mu_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">mu_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">MF_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">MF_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">frac_in_spike</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;frac_in_spike&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">frac_in_spike</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;frac_in_spike&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_spike</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_spike&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_spike</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_spike&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">cost_min</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;cost_min&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">cost_min</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;cost_min&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># If the sample falls inside our prior range, continue</span>
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="c1"># Initialize log-posterior</span>
+        <span class="n">logP</span> <span class="o">=</span> <span class="mf">0.</span>
+        
+        <span class="c1"># Translate mu_chi and sigma_chi to beta function parameters a and b </span>
+        <span class="c1"># See: https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_variance</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mu_sigma2_to_a_b</span><span class="p">(</span><span class="n">mu_chi</span><span class="p">,</span> <span class="n">sigma_chi</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+        
+        <span class="c1"># Impose cut on a and b: must be greater then or equal to 1 in order</span>
+        <span class="c1"># for distribution to go to 0 at chi=0 and chi=1</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">&lt;=</span><span class="mf">1.</span> <span class="ow">or</span> <span class="n">b</span><span class="o">&lt;=</span><span class="mf">1.</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># To match the gwtc-3 catalog, we want our hyper prior uniform in sigma^2_chi </span>
+        <span class="c1"># not sigma_chi</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sigma_chi</span><span class="p">)</span>
+        
+        <span class="c1"># Prior on Bq - gaussian centered at 0 with sigma=3</span>
+        <span class="n">logP</span> <span class="o">-=</span> <span class="p">(</span><span class="n">Bq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">18.</span> 
+        
+        <span class="c1"># --- Selection effects --- </span>
+    
+        <span class="c1"># Unpack injections</span>
+        <span class="n">chi1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+        <span class="n">chi2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+        <span class="n">cost1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+        <span class="n">cost2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+        <span class="n">m1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+        <span class="n">m2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+        <span class="n">z_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+        <span class="n">dVdz_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;dVdz&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Draw probability for component spins, masses, + redshift</span>
+        <span class="n">p_draw</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_a1a2cost1cost2&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_m1m2z&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Detected spins</span>
+        <span class="n">p_chi1_det</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi1_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+        <span class="n">p_chi2_det</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi2_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+        <span class="n">p_cost1_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">p_cost2_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">pdet_spins</span> <span class="o">=</span> <span class="n">p_chi1_det</span><span class="o">*</span><span class="n">p_chi2_det</span><span class="o">*</span><span class="n">p_cost1_det</span><span class="o">*</span><span class="n">p_cost2_det</span>
+        
+        <span class="c1"># Detected masses and redshifts</span>
+        <span class="n">pdet_masses</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_det</span><span class="p">,</span> <span class="n">m2_det</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+        <span class="n">pdet_z</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_det</span><span class="p">,</span> <span class="n">dVdz_det</span><span class="p">)</span>
+        
+        <span class="c1"># Construct full weighting factors</span>
+        <span class="n">p_det</span> <span class="o">=</span> <span class="n">pdet_spins</span><span class="o">*</span><span class="n">pdet_masses</span><span class="o">*</span><span class="n">pdet_z</span>
+        <span class="n">det_weights</span> <span class="o">=</span> <span class="n">p_det</span><span class="o">/</span><span class="n">p_draw</span>
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Check for sufficient sampling size</span>
+        <span class="c1"># Specifically require 4*Ndet effective detections, according to https://arxiv.org/abs/1904.10879</span>
+        <span class="n">Nsamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Nsamp</span><span class="o">&lt;=</span><span class="mi">4</span><span class="o">*</span><span class="n">nEvents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Calculate detection efficiency and add to log posterior</span>
+        <span class="n">log_detEff</span> <span class="o">=</span> <span class="o">-</span><span class="n">nEvents</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">))</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">log_detEff</span>
+        
+        <span class="c1"># --- Loop across BBH events ---</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">sampleDict</span><span class="p">:</span>
+
+            <span class="c1"># Unpack posterior samples for this event</span>
+            <span class="n">chi1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+            <span class="n">chi2_samples</span> <span class="o">=</span>  <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+            <span class="n">cost1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+            <span class="n">cost2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+            <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+            <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+            <span class="n">z_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+            <span class="n">z_prior_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z_prior&#39;</span><span class="p">]</span>
+            <span class="n">dVdz_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;dVc_dz&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># Evaluate model at the locations of samples for this event</span>
+            <span class="n">p_chi1</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi1_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+            <span class="n">p_chi2</span> <span class="o">=</span> <span class="n">betaDistributionPlusSpike</span><span class="p">(</span><span class="n">chi2_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">frac_in_spike</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">)</span>
+            <span class="n">p_cost1</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost1_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            <span class="n">p_cost2</span> <span class="o">=</span> <span class="n">calculate_Gaussian_Mixture_1D</span><span class="p">(</span><span class="n">cost2_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">MF_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+            
+            <span class="c1"># Pop dist for all four params combined is a product of each four individual dists</span>
+            <span class="n">pSpins</span> <span class="o">=</span> <span class="n">p_chi1</span><span class="o">*</span><span class="n">p_chi2</span><span class="o">*</span><span class="n">p_cost1</span><span class="o">*</span><span class="n">p_cost2</span>
+            
+            <span class="c1"># PE priors for chi_i and cost_i are all uniform, so we set them to unity here</span>
+            <span class="n">nSamples</span> <span class="o">=</span> <span class="n">pSpins</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">spin_PE_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span>
+            
+            <span class="c1"># Need to reweight by astrophysical priors on m1, m2, z ...</span>
+            <span class="c1"># - p(m1)*p(m2)</span>
+            <span class="n">p_astro_m1_m2</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_samples</span><span class="p">,</span> <span class="n">m2_samples</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+            <span class="n">old_m1_m2_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span> <span class="c1"># PE prior on masses is uniform in component masses</span>
+            <span class="c1"># - p(z)</span>
+            <span class="n">p_astro_redshift</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_samples</span><span class="p">,</span> <span class="n">dVdz_samples</span><span class="p">)</span>
+            <span class="c1"># - For full m1, m2, z prior reweighting: </span>
+            <span class="n">m1_m2_z_prior_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_astro_m1_m2</span><span class="o">/</span><span class="n">old_m1_m2_prior</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">p_astro_redshift</span><span class="o">/</span><span class="n">z_prior_samples</span><span class="p">)</span>
+            
+            <span class="c1"># Sum over probabilities to get the marginalized likelihood for this event</span>
+            <span class="n">pEvidence</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">nSamples</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pSpins</span><span class="o">*</span><span class="n">m1_m2_z_prior_ratio</span><span class="o">/</span><span class="n">spin_PE_prior</span><span class="p">)</span>
+
+            <span class="c1"># Add to our running total</span>
+            <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pEvidence</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">logP</span><span class="o">!=</span><span class="n">logP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logP</span>  </div>
+        
+        
+<span class="k">def</span> <span class="nf">betaSpikePlusTruncatedMixture_Galaudage</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">sampleDict</span><span class="p">,</span><span class="n">injectionDict</span><span class="p">,</span><span class="n">priorDict</span><span class="p">):</span> 
+    
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the BetaSpike+TruncatedMixture model more similar to that in Galaudage+: </span>
+<span class="sd">    similar to betaSpikePlusTruncatedMixture BUT assumes 1. both spin magnitudes are either in the </span>
+<span class="sd">    spike or bulk, not allowing for the one in each, and 2. both spin tilts are either in the </span>
+<span class="sd">    isotropic or aligned distribution, not one in each.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c : `numpy.array`</span>
+<span class="sd">        array containing hyper-parameter samples in the order: [ mu_chi, sigma_chi, MF_cost, </span>
+<span class="sd">        sigma_cost, frac_in_spike, sigma_spike, cost_min, Bq ] where </span>
+<span class="sd">        </span>
+<span class="sd">        - mu_chi = mean of spin magnitude beta distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_chi = std. dev. of spin magnitude beta distribution </span>
+<span class="sd">        </span>
+<span class="sd">        - MF_cost = mixing fraction in aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_cost = std. dev. of aligned spin subpopulation for cos tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - frac_in_spike = mixing fraction in half gaussian spike at spin mag. = 0</span>
+<span class="sd">        </span>
+<span class="sd">        - sigma_spike = std. dev. of half gaussian spike at spin mag. = 0</span>
+<span class="sd">        </span>
+<span class="sd">        - cost_min = lower truncation bound on the cosine tilt angle distribution</span>
+<span class="sd">        </span>
+<span class="sd">        - Bq = power law slope of the mass ratio distribution    </span>
+<span class="sd">        </span>
+<span class="sd">    sampleDict : dict</span>
+<span class="sd">        Precomputed dictionary containing posterior samples for each event in our catalog</span>
+<span class="sd">    injectionDict : dict</span>
+<span class="sd">        Precomputed dictionary containing successfully recovered injections</span>
+<span class="sd">    priorDict : dict</span>
+<span class="sd">        Precomputed dictionary containing bounds for the priors on each hyper-parameter</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logP : float</span>
+<span class="sd">        log posterior for the input sample &#39;c&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Make sure hyper-sample is the right length</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">==</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;Input sample has wrong length&#39;</span>
+    
+    <span class="c1"># Number of events </span>
+    <span class="n">nEvents</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sampleDict</span><span class="p">)</span>
+    
+    <span class="c1"># Unpack hyper-parameters</span>
+    <span class="n">mu_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sigma_chi</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">MF_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> 
+    <span class="n">sigma_cost</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">frac_in_spike</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">sigma_spike</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">cost_min</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">Bq</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+    
+    <span class="c1"># Reject samples outside of our prior bounds for those with uniform priors</span>
+    <span class="k">if</span> <span class="n">mu_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">mu_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;mu_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_chi</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_chi</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_chi&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">MF_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">MF_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;MF_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_cost</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_cost</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_cost&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">frac_in_spike</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;frac_in_spike&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">frac_in_spike</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;frac_in_spike&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">sigma_spike</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_spike&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">sigma_spike</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;sigma_spike&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="k">elif</span> <span class="n">cost_min</span> <span class="o">&lt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;cost_min&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">cost_min</span> <span class="o">&gt;</span> <span class="n">priorDict</span><span class="p">[</span><span class="s1">&#39;cost_min&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># If the sample falls inside our prior range, continue</span>
+    <span class="k">else</span><span class="p">:</span>
+        
+        <span class="c1"># Initialize log-posterior</span>
+        <span class="n">logP</span> <span class="o">=</span> <span class="mf">0.</span>
+        
+        <span class="c1"># Translate mu_chi and sigma_chi to beta function parameters a and b </span>
+        <span class="c1"># See: https://en.wikipedia.org/wiki/Beta_distribution#Mean_and_variance</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">mu_sigma2_to_a_b</span><span class="p">(</span><span class="n">mu_chi</span><span class="p">,</span> <span class="n">sigma_chi</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+        
+        <span class="c1"># Impose cut on a and b: must be greater then or equal to 1 in order</span>
+        <span class="c1"># for distribution to go to 0 at chi=0 and chi=1</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">&lt;=</span><span class="mf">1.</span> <span class="ow">or</span> <span class="n">b</span><span class="o">&lt;=</span><span class="mf">1.</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># To match the gwtc-3 catalog, we want our hyper prior uniform in sigma^2_chi </span>
+        <span class="c1"># not sigma_chi</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sigma_chi</span><span class="p">)</span>
+        
+        <span class="c1"># Prior on Bq - gaussian centered at 0 with sigma=3</span>
+        <span class="n">logP</span> <span class="o">-=</span> <span class="p">(</span><span class="n">Bq</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">18.</span> 
+        
+        <span class="c1"># --- Selection effects --- </span>
+    
+        <span class="c1"># Unpack injections</span>
+        <span class="n">chi1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+        <span class="n">chi2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+        <span class="n">cost1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+        <span class="n">cost2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+        <span class="n">m1_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+        <span class="n">m2_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+        <span class="n">z_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+        <span class="n">dVdz_det</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;dVdz&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Draw probability for component spins, masses, + redshift</span>
+        <span class="n">p_draw</span> <span class="o">=</span> <span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_a1a2cost1cost2&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">injectionDict</span><span class="p">[</span><span class="s1">&#39;p_draw_m1m2z&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Detected spins</span>
+        <span class="n">p_chi1_spike_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">chi1_det</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">p_chi2_spike_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">chi2_det</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">p_chi1_bulk_det</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi1_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">p_chi2_bulk_det</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi2_det</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">p_chi_det</span> <span class="o">=</span> <span class="n">frac_in_spike</span><span class="o">*</span><span class="n">p_chi1_spike_det</span><span class="o">*</span><span class="n">p_chi2_spike_det</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac_in_spike</span><span class="p">)</span><span class="o">*</span><span class="n">p_chi1_bulk_det</span><span class="o">*</span><span class="n">p_chi2_bulk_det</span>
+        
+        <span class="n">p_cost1_iso_det</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">cost_min</span><span class="p">)</span>
+        <span class="n">p_cost2_iso_det</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">cost_min</span><span class="p">)</span>
+        <span class="n">p_cost1_aligned_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">cost1_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">p_cost2_aligned_det</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">cost2_det</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">p_cost_det</span> <span class="o">=</span> <span class="n">MF_cost</span><span class="o">*</span><span class="n">p_cost1_aligned_det</span><span class="o">*</span><span class="n">p_cost2_aligned_det</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">MF_cost</span><span class="p">)</span><span class="o">*</span><span class="n">p_cost1_iso_det</span><span class="o">*</span><span class="n">p_cost2_iso_det</span>
+       
+        <span class="n">pdet_spins</span> <span class="o">=</span> <span class="n">p_chi_det</span><span class="o">*</span><span class="n">p_cost_det</span>
+        
+        <span class="c1"># Detected masses and redshifts</span>
+        <span class="n">pdet_masses</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_det</span><span class="p">,</span> <span class="n">m2_det</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+        <span class="n">pdet_z</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_det</span><span class="p">,</span> <span class="n">dVdz_det</span><span class="p">)</span>
+        
+        <span class="c1"># Construct full weighting factors</span>
+        <span class="n">p_det</span> <span class="o">=</span> <span class="n">pdet_spins</span><span class="o">*</span><span class="n">pdet_masses</span><span class="o">*</span><span class="n">pdet_z</span>
+        <span class="n">det_weights</span> <span class="o">=</span> <span class="n">p_det</span><span class="o">/</span><span class="n">p_draw</span>
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Check for sufficient sampling size</span>
+        <span class="c1"># Specifically require 4*Ndet effective detections, according to https://arxiv.org/abs/1904.10879</span>
+        <span class="n">Nsamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Nsamp</span><span class="o">&lt;=</span><span class="mi">4</span><span class="o">*</span><span class="n">nEvents</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        
+        <span class="c1"># Calculate detection efficiency and add to log posterior</span>
+        <span class="n">log_detEff</span> <span class="o">=</span> <span class="o">-</span><span class="n">nEvents</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">det_weights</span><span class="p">))</span>
+        <span class="n">logP</span> <span class="o">+=</span> <span class="n">log_detEff</span>
+        
+        <span class="c1"># --- Loop across BBH events ---</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">sampleDict</span><span class="p">:</span>
+
+            <span class="c1"># Unpack posterior samples for this event</span>
+            <span class="n">chi1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a1&#39;</span><span class="p">]</span>
+            <span class="n">chi2_samples</span> <span class="o">=</span>  <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;a2&#39;</span><span class="p">]</span>
+            <span class="n">cost1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost1&#39;</span><span class="p">]</span>
+            <span class="n">cost2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;cost2&#39;</span><span class="p">]</span>
+            <span class="n">m1_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m1&#39;</span><span class="p">]</span>
+            <span class="n">m2_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;m2&#39;</span><span class="p">]</span>
+            <span class="n">z_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z&#39;</span><span class="p">]</span>
+            <span class="n">z_prior_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;z_prior&#39;</span><span class="p">]</span>
+            <span class="n">dVdz_samples</span> <span class="o">=</span> <span class="n">sampleDict</span><span class="p">[</span><span class="n">event</span><span class="p">][</span><span class="s1">&#39;dVc_dz&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># Evaluate model at the locations of samples for this event</span>
+            <span class="n">p_chi1_spike</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">chi1_samples</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">p_chi2_spike</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">chi2_samples</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sigma_spike</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">p_chi1_bulk</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi1_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">p_chi2_bulk</span> <span class="o">=</span> <span class="n">betaDistribution</span><span class="p">(</span><span class="n">chi2_samples</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">p_chi</span> <span class="o">=</span> <span class="n">frac_in_spike</span><span class="o">*</span><span class="n">p_chi1_spike</span><span class="o">*</span><span class="n">p_chi2_spike</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac_in_spike</span><span class="p">)</span><span class="o">*</span><span class="n">p_chi1_bulk</span><span class="o">*</span><span class="n">p_chi2_bulk</span>
+
+            <span class="n">p_cost1_iso</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">cost_min</span><span class="p">)</span>
+            <span class="n">p_cost2_iso</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">cost_min</span><span class="p">)</span>
+            <span class="n">p_cost1_aligned</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">cost1_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">p_cost2_aligned</span> <span class="o">=</span> <span class="n">calculate_Gaussian_1D</span><span class="p">(</span><span class="n">cost2_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sigma_cost</span><span class="p">,</span> <span class="n">cost_min</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">p_cost</span> <span class="o">=</span> <span class="n">MF_cost</span><span class="o">*</span><span class="n">p_cost1_aligned</span><span class="o">*</span><span class="n">p_cost2_aligned</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">MF_cost</span><span class="p">)</span><span class="o">*</span><span class="n">p_cost1_iso</span><span class="o">*</span><span class="n">p_cost2_iso</span>
+       
+            <span class="n">pSpins</span> <span class="o">=</span> <span class="n">p_chi</span><span class="o">*</span><span class="n">p_cost</span>
+            
+            <span class="c1"># PE priors for chi_i and cost_i are all uniform, so we set them to unity here</span>
+            <span class="n">nSamples</span> <span class="o">=</span> <span class="n">pSpins</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">spin_PE_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span>
+            
+            <span class="c1"># Need to reweight by astrophysical priors on m1, m2, z ...</span>
+            <span class="c1"># - p(m1)*p(m2)</span>
+            <span class="n">p_astro_m1_m2</span> <span class="o">=</span> <span class="n">p_astro_masses</span><span class="p">(</span><span class="n">m1_samples</span><span class="p">,</span> <span class="n">m2_samples</span><span class="p">,</span> <span class="n">bq</span><span class="o">=</span><span class="n">Bq</span><span class="p">)</span>
+            <span class="n">old_m1_m2_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nSamples</span><span class="p">)</span> <span class="c1"># PE prior on masses is uniform in component masses</span>
+            <span class="c1"># - p(z)</span>
+            <span class="n">p_astro_redshift</span> <span class="o">=</span> <span class="n">p_astro_z</span><span class="p">(</span><span class="n">z_samples</span><span class="p">,</span> <span class="n">dVdz_samples</span><span class="p">)</span>
+            <span class="c1"># - For full m1, m2, z prior reweighting: </span>
+            <span class="n">m1_m2_z_prior_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_astro_m1_m2</span><span class="o">/</span><span class="n">old_m1_m2_prior</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">p_astro_redshift</span><span class="o">/</span><span class="n">z_prior_samples</span><span class="p">)</span>
+            
+            <span class="c1"># Sum over probabilities to get the marginalized likelihood for this event</span>
+            <span class="n">pEvidence</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">nSamples</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pSpins</span><span class="o">*</span><span class="n">m1_m2_z_prior_ratio</span><span class="o">/</span><span class="n">spin_PE_prior</span><span class="p">)</span>
+
+            <span class="c1"># Add to our running total</span>
+            <span class="n">logP</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pEvidence</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">logP</span><span class="o">!=</span><span class="n">logP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">logP</span>  
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Tom Callister, Simona Miller, Katerina Chatziioannou, Will Farr.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
