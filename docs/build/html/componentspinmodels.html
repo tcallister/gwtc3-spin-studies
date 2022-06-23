@@ -42,10 +42,10 @@
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="effective-spin-models.html">Effective spin models</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Component spin models</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#beta-plus-mixture-betaplusmixture-image">Beta Plus Mixture </a></li>
-<li class="toctree-l2"><a class="reference internal" href="#beta-plus-truncated-mixture-betaplustruncmixture-image">Beta Plus Truncated Mixture </a></li>
-<li class="toctree-l2"><a class="reference internal" href="#beta-spike-plus-mixture-betaspikeplusmixture-image">Beta Spike Plus Mixture </a></li>
-<li class="toctree-l2"><a class="reference internal" href="#beta-spike-plus-truncated-mixture-betaspikeplustruncmixture-image">Beta Spike Plus Truncated Mixture </a></li>
+<li class="toctree-l2"><a class="reference internal" href="#beta-mixture-betaplusmixture-image">Beta + Mixture </a></li>
+<li class="toctree-l2"><a class="reference internal" href="#beta-truncated-mixture-betaplustruncmixture-image">Beta + Truncated Mixture </a></li>
+<li class="toctree-l2"><a class="reference internal" href="#beta-spike-mixture-betaspikeplusmixture-image">Beta Spike + Mixture </a></li>
+<li class="toctree-l2"><a class="reference internal" href="#beta-spike-truncated-mixture-betaspikeplustruncmixture-image">Beta Spike + Truncated Mixture </a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="making-figures.html">Figure generation</a></li>
@@ -78,8 +78,8 @@
   <section id="component-spin-models">
 <h1>Component spin models<a class="headerlink" href="#component-spin-models" title="Permalink to this headline"></a></h1>
 <p>We investigate potential features in the underlying binary black hole component spin magnitude and tilt angle distributions using several different models.</p>
-<section id="beta-plus-mixture-betaplusmixture-image">
-<h2>Beta Plus Mixture <a class="reference internal" href="_images/model-cartoons-beta.pdf"><img alt="betaplusmixture-image" src="_images/model-cartoons-beta.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-plus-mixture-betaplusmixture-image" title="Permalink to this headline"></a></h2>
+<section id="beta-mixture-betaplusmixture-image">
+<h2>Beta + Mixture <a class="reference internal" href="_images/model-cartoons-beta.pdf"><img alt="betaplusmixture-image" src="_images/model-cartoons-beta.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-mixture-betaplusmixture-image" title="Permalink to this headline"></a></h2>
 <p>Following the GWTC-3 <a class="reference external" href="https://arxiv.org/abs/2111.03634">Rates and Populations paper</a>, our simplest approach is to model the spin magnitudes <span class="math notranslate nohighlight">\(\chi_i\)</span> as a beta distribution and the cosines of the spin tilt angles <span class="math notranslate nohighlight">\(\cos\theta_i\)</span> as a mixture between aligned and isotropic subpopulations:</p>
 <div class="math notranslate nohighlight">
 \[p(\chi | \alpha, \beta) \propto \chi^{1-\alpha} \, (1-\chi)^{1-\beta}\]</div>
@@ -102,8 +102,8 @@ $ python run_beta_plus_mixture.py
 <p>A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found <a class="reference external" href="https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_component_spin_beta_plus_mixture.ipynb">here</a>.</p>
 </div>
 </section>
-<section id="beta-plus-truncated-mixture-betaplustruncmixture-image">
-<h2>Beta Plus Truncated Mixture <a class="reference internal" href="_images/model-cartoons-betaTruncated.pdf"><img alt="betaplustruncmixture-image" src="_images/model-cartoons-betaTruncated.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-plus-truncated-mixture-betaplustruncmixture-image" title="Permalink to this headline"></a></h2>
+<section id="beta-truncated-mixture-betaplustruncmixture-image">
+<h2>Beta + Truncated Mixture <a class="reference internal" href="_images/model-cartoons-betaTruncated.pdf"><img alt="betaplustruncmixture-image" src="_images/model-cartoons-betaTruncated.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-truncated-mixture-betaplustruncmixture-image" title="Permalink to this headline"></a></h2>
 <p>Here, we keep the same <span class="math notranslate nohighlight">\(\chi_i\)</span> distribution as in Beta Plus Mixture but add a lower truncation bound <span class="math notranslate nohighlight">\(z_\mathrm{min}\)</span> to the <span class="math notranslate nohighlight">\(\cos\theta_i\)</span> distribution:</p>
 <div class="math notranslate nohighlight">
 \[p(\cos\theta|f_\mathrm{iso},\sigma_t,z_\mathrm{min}) = \frac{f_\mathrm{iso}}{1-z_\mathrm{min}} + (1-f_\mathrm{iso}){\mathcal {N}}_{[z_\mathrm{min},1]}(\cos\theta|1,\sigma_t)\,.\]</div>
@@ -122,8 +122,8 @@ $ python run_beta_plus_truncated_mixture.py
 <p>A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found <a class="reference external" href="https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_component_spin_beta_plus_truncated_mixture.ipynb">here</a>.</p>
 </div>
 </section>
-<section id="beta-spike-plus-mixture-betaspikeplusmixture-image">
-<h2>Beta Spike Plus Mixture <a class="reference internal" href="_images/model-cartoons-betaSpike.pdf"><img alt="betaspikeplusmixture-image" src="_images/model-cartoons-betaSpike.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-spike-plus-mixture-betaspikeplusmixture-image" title="Permalink to this headline"></a></h2>
+<section id="beta-spike-mixture-betaspikeplusmixture-image">
+<h2>Beta Spike + Mixture <a class="reference internal" href="_images/model-cartoons-betaSpike.pdf"><img alt="betaspikeplusmixture-image" src="_images/model-cartoons-betaSpike.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-spike-mixture-betaspikeplusmixture-image" title="Permalink to this headline"></a></h2>
 <p>Here, we keep the same <span class="math notranslate nohighlight">\(\cos\theta_i\)</span> distribution as in Beta Plus Mixture but add a spike to the <span class="math notranslate nohighlight">\(\chi_i\)</span> distribution. This spike is a truncated half-gaussian centered at <span class="math notranslate nohighlight">\(\chi=0\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[p(\chi | \alpha, \beta, f_\mathrm{spike}, \epsilon_\mathrm{spike}) = f_\mathrm{spike}{\mathcal {N}}_{[0,1]}(\chi|0,\epsilon_\mathrm{spike}) + \frac{1-f_\mathrm{spike}}{c(\alpha,\beta)} \chi_i^{1-\alpha} \, (1-\chi_i)^{1-\beta}\]</div>
@@ -143,8 +143,8 @@ $ python run_beta_spike_plus_mixture.py
 <p>A notebook that demonstrates how to load in, inspect, and manipulate this output file can be found <a class="reference external" href="https://github.com/tcallister/gwtc3-spin-studies/blob/main/data/inspect_component_spin_beta_spike_plus_mixture.ipynb">here</a>.</p>
 </div>
 </section>
-<section id="beta-spike-plus-truncated-mixture-betaspikeplustruncmixture-image">
-<h2>Beta Spike Plus Truncated Mixture <a class="reference internal" href="_images/model-cartoons-betaSpikeTrunc.pdf"><img alt="betaspikeplustruncmixture-image" src="_images/model-cartoons-betaSpikeTrunc.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-spike-plus-truncated-mixture-betaspikeplustruncmixture-image" title="Permalink to this headline"></a></h2>
+<section id="beta-spike-truncated-mixture-betaspikeplustruncmixture-image">
+<h2>Beta Spike + Truncated Mixture <a class="reference internal" href="_images/model-cartoons-betaSpikeTrunc.pdf"><img alt="betaspikeplustruncmixture-image" src="_images/model-cartoons-betaSpikeTrunc.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-spike-truncated-mixture-betaspikeplustruncmixture-image" title="Permalink to this headline"></a></h2>
 <p>In our model with the most features, we use <span class="math notranslate nohighlight">\(\chi_i\)</span> distribution from Beta Spike Plus Mixture and the <span class="math notranslate nohighlight">\(\cos\theta_i\)</span> distribution from Beta Plus Truncated Mixture.</p>
 <p>This model can be rerun as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studies

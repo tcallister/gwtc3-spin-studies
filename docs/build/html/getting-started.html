@@ -92,12 +92,16 @@ To set up this environment, do the following:</p>
 </section>
 <section id="downloading-input-files-and-inference-results">
 <h2>Downloading input files and inference results<a class="headerlink" href="#downloading-input-files-and-inference-results" title="Permalink to this headline"></a></h2>
-<p>Datafiles containing the output of our inference codes are hosted on Zenodo, as are the input files loaded in by our inference code.
+<p>Datafiles containing the output of our inference codes are hosted on Zenodo at <a class="reference external" href="https://doi.org/10.5281/zenodo.6505272">https://doi.org/10.5281/zenodo.6505272</a>, along with the input files loaded in by our inference code.
 If you want to regenerate figures or rerun any of our analyses, you’ll need to download this input/output data locally.
 You can do this via</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ XXXXX
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> data/
+$ . download_data_from_zenodo.sh
 </pre></div>
 </div>
+<p>This script will populate the <code class="code docutils literal notranslate"><span class="pre">data/</span></code> directory with datafiles containing the output of our analyses.
+These output files can be inspected by running the jupyter notebooks also appearing in the <code class="code docutils literal notranslate"><span class="pre">data/</span></code> directory; see <a class="reference internal" href="effective-spin-models.html#effective-spin-models"><span class="std std-ref">Effective spin models</span></a> and <a class="reference internal" href="componentspinmodels.html#component-spin-models"><span class="std std-ref">Component spin models</span></a> for some additional information.
+The script will also place several files in the <code class="code docutils literal notranslate"><span class="pre">code/input/</span></code> directory, which are needed to rerun analyses and/or regenerate figures.</p>
 <p>Some of our figures also contain data produced by Galaudage+ (2021) <a class="footnote-reference brackets" href="#id2" id="id1">1</a> and hosted at <a class="reference external" href="https://github.com/shanikagalaudage/bbh_spin">https://github.com/shanikagalaudage/bbh_spin</a>.
 If you want to regenerate figures, you’ll want to clone this repository locally (making sure to check out files stored in git-lfs) and create a link to this repository in the <code class="code docutils literal notranslate"><span class="pre">code/input/</span></code> folder:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> <span class="o">[</span>.../desired/filepath/...<span class="o">]</span>
