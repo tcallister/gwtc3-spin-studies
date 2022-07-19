@@ -27,7 +27,7 @@ This model can be rerun as follows:
 
 .. code-block:: bash
 
-    $ conda activate gwtc3-spin-studes
+    $ conda activate gwtc3-spin-studies
     $ cd code/emceeCode/
     $ python run_beta_plus_mixture.py
     
@@ -58,7 +58,7 @@ This model can be rerun as follows:
 
 .. code-block:: bash
 
-    $ conda activate gwtc3-spin-studes
+    $ conda activate gwtc3-spin-studies
     $ cd code/emceeCode/
     $ python run_beta_plus_truncated_mixture.py
     
@@ -93,7 +93,7 @@ This model can be rerun as follows:
 
 .. code-block:: bash
 
-    $ conda activate gwtc3-spin-studes
+    $ conda activate gwtc3-spin-studies
     $ cd code/emceeCode/
     $ python run_beta_spike_plus_mixture.py
     
@@ -122,7 +122,7 @@ This model can be rerun as follows:
 
 .. code-block:: bash
 
-    $ conda activate gwtc3-spin-studes
+    $ conda activate gwtc3-spin-studies
     $ cd code/emceeCode/
     $ python run_beta_spike_plus_truncated_mixture.py
     

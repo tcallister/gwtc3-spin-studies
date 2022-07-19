@@ -88,7 +88,7 @@
 \[p(\cos\theta|f_\mathrm{iso},\sigma_t) = \frac{f_\mathrm{iso}}{2} + (1-f_\mathrm{iso}){\mathcal {N}}_{[-1,1]}(\cos\theta|1,\sigma_t)\,.\]</div>
 <p>Here the isotropic subpopulation is uniform over <span class="math notranslate nohighlight">\(\cos\theta_i \in [-1,1]\)</span> and the aligned spin population is a truncated half gaussian <span class="math notranslate nohighlight">\(\mathcal{N}\)</span> peaking at <span class="math notranslate nohighlight">\(\cos\theta_i = 1\)</span> with a width <span class="math notranslate nohighlight">\(\sigma_t\)</span>.</p>
 <p>This model can be rerun as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studes
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studies
 $ <span class="nb">cd</span> code/emceeCode/
 $ python run_beta_plus_mixture.py
 </pre></div>
@@ -108,7 +108,7 @@ $ python run_beta_plus_mixture.py
 <div class="math notranslate nohighlight">
 \[p(\cos\theta|f_\mathrm{iso},\sigma_t,z_\mathrm{min}) = \frac{f_\mathrm{iso}}{1-z_\mathrm{min}} + (1-f_\mathrm{iso}){\mathcal {N}}_{[z_\mathrm{min},1]}(\cos\theta|1,\sigma_t)\,.\]</div>
 <p>This model can be rerun as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studes
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studies
 $ <span class="nb">cd</span> code/emceeCode/
 $ python run_beta_plus_truncated_mixture.py
 </pre></div>
@@ -129,7 +129,7 @@ $ python run_beta_plus_truncated_mixture.py
 \[p(\chi | \alpha, \beta, f_\mathrm{spike}, \epsilon_\mathrm{spike}) = f_\mathrm{spike}{\mathcal {N}}_{[0,1]}(\chi|0,\epsilon_\mathrm{spike}) + \frac{1-f_\mathrm{spike}}{c(\alpha,\beta)} \chi_i^{1-\alpha} \, (1-\chi_i)^{1-\beta}\]</div>
 <p>where <span class="math notranslate nohighlight">\(f_\mathrm{spike}\)</span> is the fraction of the population in the spike, <span class="math notranslate nohighlight">\(\epsilon_\mathrm{spike}\)</span> is the width of the spike, and <span class="math notranslate nohighlight">\(c(\alpha,\beta)\)</span> is a normalization factor for the beta distribution (not a hyperparameter).</p>
 <p>This model can be rerun as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studes
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studies
 $ <span class="nb">cd</span> code/emceeCode/
 $ python run_beta_spike_plus_mixture.py
 </pre></div>
@@ -147,7 +147,7 @@ $ python run_beta_spike_plus_mixture.py
 <h2>Beta Spike + Truncated Mixture <a class="reference internal" href="_images/model-cartoons-betaSpikeTrunc.pdf"><img alt="betaspikeplustruncmixture-image" src="_images/model-cartoons-betaSpikeTrunc.pdf" style="width: 250px;" /></a><a class="headerlink" href="#beta-spike-truncated-mixture-betaspikeplustruncmixture-image" title="Permalink to this headline"></a></h2>
 <p>In our model with the most features, we use <span class="math notranslate nohighlight">\(\chi_i\)</span> distribution from Beta Spike Plus Mixture and the <span class="math notranslate nohighlight">\(\cos\theta_i\)</span> distribution from Beta Plus Truncated Mixture.</p>
 <p>This model can be rerun as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studes
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda activate gwtc3-spin-studies
 $ <span class="nb">cd</span> code/emceeCode/
 $ python run_beta_spike_plus_truncated_mixture.py
 </pre></div>
