@@ -1,0 +1,4 @@
+\newcommand{gaussianChiEffMean}{ 0.05^{+ 0.03}_{- 0.03} }
+\newcommand{gaussianChiEffStd}{ 0.09^{+ 0.03}_{- 0.04} }
+\newcommand{doubleGaussianChiEffMean}{ 0.06^{+ 0.04}_{- 0.03} }
+\newcommand{doubleGaussianChiEffStd}{ 0.12^{+ 0.04}_{- 0.08} }
