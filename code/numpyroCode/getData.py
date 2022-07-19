@@ -1,4 +1,6 @@
 import numpy as np
+import os
+dirname = os.path.dirname(__file__)
 
 def getInjections(mMin=5.0,
     mMax=88.2,
@@ -39,7 +41,7 @@ def getInjections(mMin=5.0,
         Dictionary containing found injections, with factors needed to reweight to desired mass/redshift distribution.
     """
 
-    injectionFile = "../input/injectionDict_FAR_1_in_1.pickle"
+    injectionFile = os.path.join(dirname,"../input/injectionDict_FAR_1_in_1.pickle")
     injectionDict = np.load(injectionFile,allow_pickle=True)
 
     m1_det = np.array(injectionDict['m1'])
@@ -107,7 +109,8 @@ def getSamples(mMin=5.,
     """
 
     # Dicts with samples:
-    sampleDict = np.load("../input/sampleDict_FAR_1_in_1_yr.pickle",allow_pickle=True)
+    sampleDictPath = os.path.join(dirname,"../input/sampleDict_FAR_1_in_1_yr.pickle")
+    sampleDict = np.load(sampleDictPath,allow_pickle=True)
 
     # Non-BBHs
     non_BBHs = ['GW170817','S190425z','S190426c','S190814bv','S190917u','S200105ae','S200115j']
